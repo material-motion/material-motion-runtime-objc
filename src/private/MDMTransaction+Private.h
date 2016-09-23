@@ -19,8 +19,11 @@
 @protocol MDMPlan;
 
 @interface MDMTransactionLog : NSObject
+
 @property(nonatomic) NSArray<id<MDMPlan>> *plans;
 @property(nonatomic) id target;
+@property(nonatomic) NSString *name;
+
 @end
 
 @interface MDMTransaction ()

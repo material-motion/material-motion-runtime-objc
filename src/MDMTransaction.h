@@ -27,9 +27,36 @@ NS_SWIFT_NAME(Transaction)
 
 #pragma mark Adding plans to a transaction
 
-/** Associate an plan with a given target. */
+/**
+Associates a plan with a given target.
+
+@param plan The plan to add to this transaction.
+@param target The target on which the plan can operate.
+*/
 - (void)addPlan:(nonnull id<MDMPlan>)plan
        toTarget:(nonnull id)target
-    NS_SWIFT_NAME(add(plan:to:));
+  NS_SWIFT_NAME(add(plan:to:));
+
+/**
+ Associates a named plan with a given target.
+ 
+ @param plan The plan to add to this transaction.
+ @param target The target on which the plan can operate.
+ @param name String identifier for the plan.
+ */
+- (void)addPlan:(nonnull id<MDMPlan>)plan
+       toTarget:(nonnull id)target
+       withName:(nonnull NSString *)name
+  NS_SWIFT_NAME(add(plan:to:withName:));
+
+/**
+ Removes a named plan from the transaction.
+ 
+ @param plan The plan to add to this transaction.
+ @param target The target on which the plan can operate.
+ @param name String identifier for the plan
+ */
+- (void)removePlanNamed:(nonnull NSString *)name
+  NS_SWIFT_NAME(remove(name:));
 
 @end

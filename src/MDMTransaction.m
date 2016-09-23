@@ -19,21 +19,44 @@
 
 @implementation MDMTransaction {
   NSMutableArray *_logs;
+  NSMutableDictionary *_namedPlans;
 }
 
 - (instancetype)init {
   self = [super init];
   if (self) {
     _logs = [NSMutableArray array];
+    _namedPlans = [NSMutableDictionary dictionary];
   }
   return self;
 }
 
 - (void)addPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target {
+  [self commonAddPlan:plan toTarget:target withName:nil];
+}
+
+- (void)addPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target withName:(NSString *)name {
+  [self commonAddPlan:plan toTarget:target withName:name];
+}
+
+- (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target withName:(NSString *)name {
+  NSObject<MDMPlan> *copiedPlan = [plan copy];
   MDMTransactionLog *log = [MDMTransactionLog new];
-  log.plans = @[ [plan copy] ];
+  log.plans = @[ copiedPlan ];
   log.target = target;
+  log.name = name;
+  if (name.length) {
+    _namedPlans[name] = log;
+  }
   [_logs addObject:log];
+}
+
+- (void)removePlanNamed:(nonnull NSString *)name {
+  MDMTransactionLog *planLog = _namedPlans[name];
+  if (planLog != nil && _namedPlans[name] != nil) {
+    [_namedPlans removeObjectForKey:name];
+    [_logs removeObject:planLog];
+  }
 }
 
 - (NSArray<MDMTransactionLog *> *)logs {
