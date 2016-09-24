@@ -51,6 +51,11 @@ NS_SWIFT_NAME(PlanPerforming)
 - (void)addPlan:(nonnull id<MDMPlan>)plan
     NS_SWIFT_NAME(add(plan:));
 
+@optional
+
+- (void)removePlan:(nonnull id<MDMPlan>)plan
+    NS_SWIFT_NAME(remove(plan:));
+
 @end
 
 #pragma mark - Delegated performing

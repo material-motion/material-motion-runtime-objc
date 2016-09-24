@@ -47,7 +47,7 @@ class PlanTests: XCTestCase {
   func testAddAndRemoveNamedPlan() {
     transaction.add(plan: immediatelyEndingPlan, to: target, withName: "common_name")
     transaction.add(plan: neverEndingPlan, to: target, withName: "never_ending_plan_name")
-    transaction.remove(name: "never_ending_plan_name", from: target)
+    transaction.remove(name: "never_ending_plan_name")
     
     scheduler.commit(transaction: transaction)
     
@@ -56,7 +56,7 @@ class PlanTests: XCTestCase {
   
   func testRemoveNamedPlanThatIsntThere() {
     transaction.add(plan: targetAlteringPlan, to: target, withName: "target_altering_plan")
-    transaction.remove(name: "was_never_added_plan", from: target)
+    transaction.remove(name: "was_never_added_plan")
     
     scheduler.commit(transaction: transaction)
     
@@ -84,10 +84,18 @@ class TargetAltering: NSObject, Plan {
     return TargetAltering()
   }
   
-  private class Performer: NSObject, DelegatedPerforming {
+  private class Performer: NSObject, DelegatedPerforming, PlanPerforming {
     let target: Any
     required init(target: Any) {
       self.target = target
+    }
+    
+    func add(plan: Plan) {
+      
+    }
+    
+    func remove(plan: Plan) {
+      // tear down any state here?
     }
     
     func setDelegatedPerformance(willStart: @escaping DelegatedPerformanceTokenReturnBlock,

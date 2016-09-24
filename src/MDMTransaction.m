@@ -16,6 +16,8 @@
 
 #import "MDMTransaction.h"
 #import "MDMTransaction+Private.h"
+#import "MDMPerforming.h"
+#import "MDMPlan.h"
 
 @implementation MDMTransaction {
   NSMutableArray *_logs;
@@ -54,6 +56,16 @@
 - (void)removePlanNamed:(nonnull NSString *)name {
   MDMTransactionLog *planLog = _namedPlans[name];
   if (planLog != nil && _namedPlans[name] != nil) {
+    for (id<MDMPlan>plan in [planLog plans]) {
+      // unsure of how to get access to the original performer instance when all I get from MDMPlan is `performerClass`
+      // MDMPerformerInfo instances are housed in MDMPerformerGroup and I believe that's where the performer instance is housed. I guess we could open up access to these instances in MDMPerformerGroup ?
+      // creating a new performer here, but unsure if that's the correct way of handling this
+      Class performerClass = [plan performerClass];
+      id<MDMPlanPerforming> performer = [[performerClass alloc] initWithTarget:[planLog target]];
+      if ([performer respondsToSelector:@selector(removePlan:)]) {
+        [performer removePlan:plan];
+      }
+    }
     [_namedPlans removeObjectForKey:name];
     [_logs removeObject:planLog];
   }
