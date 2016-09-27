@@ -85,15 +85,19 @@
     }
     
     // MDMNamedPlanPerforming callbacks
-    if (log.name.length) {
-      // WIP
-      // need some way of identifying whether the plan was originally an add or remove
-      if ([performer respondsToSelector:@selector(addPlan:withName:)]) {
-        [(id<MDMNamedPlanPerforming>)performer addPlan:plan withName:log.name];
-      }
-      if ([performer respondsToSelector:@selector(removePlanNamed:)]) {
-        [(id<MDMNamedPlanPerforming>)performer removePlanNamed:log.name];
-      }
+    switch (log.transactionLogType) {
+      case MDMTransactionLogTypeAddNamedPlan: {
+        if ([performer respondsToSelector:@selector(addPlan:withName:)]) {
+          [(id<MDMNamedPlanPerforming>)performer addPlan:plan withName:log.name];
+        }
+      } break;
+      case MDMTransactionLogTypeRemoveNamedPlan: {
+        if ([performer respondsToSelector:@selector(removePlanNamed:)]) {
+          [(id<MDMNamedPlanPerforming>)performer removePlanNamed:log.name];
+        }
+      } break;
+      default:
+        break;
     }
   }
 }

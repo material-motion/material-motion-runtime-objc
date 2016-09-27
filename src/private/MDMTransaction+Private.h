@@ -18,13 +18,21 @@
 
 @protocol MDMPlan;
 
+// typedef for identifying what type of operation the MDMTransactionLog is associated with
+typedef NS_ENUM(NSInteger, MDMTransactionLogType) {
+  MDMTransactionLogTypeUncategorized = 0,
+  MDMTransactionLogTypeAddNamedPlan,
+  MDMTransactionLogTypeRemoveNamedPlan,
+};
+
 @interface MDMTransactionLog : NSObject
 
 @property(nonatomic, copy) NSArray<id<MDMPlan>> *plans;
 @property(nonatomic, strong) id target;
 @property(nonatomic, copy) NSString *name;
+@property(nonatomic, assign) MDMTransactionLogType transactionLogType;
 
-- (instancetype)initWithPlan:(NSObject<MDMPlan> *)plan target:(id)target name:(NSString *)name;
+- (instancetype)initWithPlan:(NSObject<MDMPlan> *)plan target:(id)target name:(NSString *)name transactionLogType:(MDMTransactionLogType)transactionLogType;
 
 @end
 

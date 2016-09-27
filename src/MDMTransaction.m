@@ -41,12 +41,13 @@
 }
 
 - (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target withName:(NSString *)name {
-  MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:plan target:target name:name];
+  MDMTransactionLogType transactionLogType = name == nil ? MDMTransactionLogTypeUncategorized : MDMTransactionLogTypeAddNamedPlan;
+  MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:plan target:target name:name transactionLogType:transactionLogType];
   [_logs addObject:log];
 }
 
 - (void)removePlanNamed:(nonnull NSString *)name fromTarget:(nonnull id)target {
-  MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:nil target:target name:name];
+  MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:nil target:target name:name transactionLogType:MDMTransactionLogTypeRemoveNamedPlan];
   [_logs removeObject:log];
 }
 
@@ -58,7 +59,7 @@
 
 @implementation MDMTransactionLog
 
-- (instancetype)initWithPlan:(NSObject<MDMPlan> *)plan target:(id)target name:(NSString *)name {
+- (instancetype)initWithPlan:(NSObject<MDMPlan> *)plan target:(id)target name:(NSString *)name transactionLogType:(MDMTransactionLogType)transactionLogType {
   self = [super init];
   if (self) {
     if (plan != nil) {
@@ -66,6 +67,7 @@
     }
     _target = target;
     _name = [name copy];
+    _transactionLogType = transactionLogType;
   }
   return self;
 }

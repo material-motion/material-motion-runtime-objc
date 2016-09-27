@@ -34,6 +34,7 @@ class PlanTests: XCTestCase {
     immediatelyEndingPlan = Emit(plan: NoopDelegation())
     neverEndingPlan = NeverEnding()
     targetAlteringPlan = TargetAltering()
+    target.text = ""
   }
   
   func testAddingNamedPlan() {
@@ -49,6 +50,8 @@ class PlanTests: XCTestCase {
     transaction.add(plan: neverEndingPlan, to: target, withName: "never_ending_plan_name")
     transaction.removePlan(named: "never_ending_plan_name", from: target)
     
+    XCTAssertTrue(target.text! == "")
+    
     scheduler.commit(transaction: transaction)
     
     XCTAssertTrue(scheduler.activityState == .idle)
@@ -58,9 +61,11 @@ class PlanTests: XCTestCase {
     transaction.add(plan: targetAlteringPlan, to: target, withName: "target_altering_plan")
     transaction.removePlan(named: "was_never_added_plan", from: target)
     
+    XCTAssertTrue(target.text! == "")
+    
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(target.text! == "done")
+    XCTAssertTrue(target.text! == "delegatedadded")
     XCTAssertTrue(scheduler.activityState == .idle)
   }
   
@@ -68,9 +73,11 @@ class PlanTests: XCTestCase {
     transaction.add(plan: neverEndingPlan, to: target, withName: "common_name")
     transaction.add(plan: targetAlteringPlan, to: target, withName: "common_name")
     
+    XCTAssertTrue(target.text! == "")
+    
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(target.text! == "done")
+    XCTAssertTrue(target.text! == "delegatedadded")
   }
   
   func testNamedPlansMakeAddAndRemoveCallbacks() {
@@ -78,9 +85,11 @@ class PlanTests: XCTestCase {
     transaction.add(plan: firstPlan, to: target, withName: "common_name")
     transaction.removePlan(named: "common_name", from: target)
     
+    XCTAssertTrue(target.text! == "")
+    
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(target.text! == "addedremoved")
+    XCTAssertTrue(target.text! == "")
   }
 }
 
@@ -116,7 +125,7 @@ class TargetAltering: NSObject, Plan {
                                  didEnd: @escaping DelegatedPerformanceTokenArgBlock) {
       let token = willStart()!
       if let unwrappedTarget = self.target as? UITextView {
-        unwrappedTarget.text = "done"
+        unwrappedTarget.text = "delegated"
       }
       didEnd(token)
     }
