@@ -119,8 +119,6 @@ NS_SWIFT_NAME(ComposablePerforming)
 NS_SWIFT_NAME(NamedPlanPerforming)
 @protocol MDMNamedPlanPerforming <MDMPerforming>
 
-@optional
-
 /**
  Provides the performer with an plan and a name.
  
