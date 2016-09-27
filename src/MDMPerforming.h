@@ -170,6 +170,8 @@ NS_SWIFT_NAME(NamedPlanPerforming)
 - (void)removePlanNamed:(nonnull NSString *)name
   NS_SWIFT_NAME(removePlan(named:));
 
+@end
+
 #pragma mark - Deprecated APIs
 
 // clang-format off
@@ -179,7 +181,7 @@ NS_SWIFT_NAME(NamedPlanPerforming)
  */
 NS_SWIFT_NAME(DelegatedPerformingToken)
 __deprecated_msg("Use MDMIsActiveToken instead.")
-@protocol MDMDelegatedPerformingToken<NSObject> @end
+@protocol MDMDelegatedPerformingToken<NSObject>@end
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -214,4 +216,3 @@ NS_SWIFT_NAME(setDelegatedPerformance(willStart:didEnd:));
 
 @end
     // clang-format on
->>>>>>> develop

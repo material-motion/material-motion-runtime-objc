@@ -23,7 +23,7 @@ class PlanTests: XCTestCase {
   var scheduler:Scheduler!
   var transaction:Transaction!
   var immediatelyEndingPlan:Plan!
-  var neverEndingPlan:Plan!
+  var foreverContinuous:Plan!
   var targetAlteringPlan:Plan!
   
   override func setUp() {
@@ -31,14 +31,14 @@ class PlanTests: XCTestCase {
     target = UITextView.init()
     scheduler = Scheduler()
     transaction = Transaction()
-    immediatelyEndingPlan = Emit(plan: NoopDelegation())
-    neverEndingPlan = NeverEnding()
+    immediatelyEndingPlan = Emit(plan: InstantlyContinuous())
+    foreverContinuous = ForeverContinuous()
     targetAlteringPlan = TargetAltering()
     target.text = ""
   }
   
   func testAddingNamedPlan() {
-    transaction.add(plan: neverEndingPlan, to: target, withName: "never_ending_plan_name")
+    transaction.add(plan: foreverContinuous, to: target, withName: "forever_continuous_plan_name")
     
     scheduler.commit(transaction: transaction)
     
@@ -47,8 +47,8 @@ class PlanTests: XCTestCase {
   
   func testAddAndRemoveNamedPlan() {
     transaction.add(plan: immediatelyEndingPlan, to: target, withName: "common_name")
-    transaction.add(plan: neverEndingPlan, to: target, withName: "never_ending_plan_name")
-    transaction.removePlan(named: "never_ending_plan_name", from: target)
+    transaction.add(plan: foreverContinuous, to: target, withName: "forever_continuous_plan_name")
+    transaction.removePlan(named: "forever_continuous_plan_name", from: target)
     
     XCTAssertTrue(target.text! == "")
     
@@ -70,7 +70,7 @@ class PlanTests: XCTestCase {
   }
   
   func testNamedPlansOverwiteOneAnother() {
-    transaction.add(plan: neverEndingPlan, to: target, withName: "common_name")
+    transaction.add(plan: foreverContinuous, to: target, withName: "common_name")
     transaction.add(plan: targetAlteringPlan, to: target, withName: "common_name")
     
     XCTAssertTrue(target.text! == "")
@@ -103,7 +103,7 @@ class TargetAltering: NSObject, Plan {
     return TargetAltering()
   }
   
-  private class Performer: NSObject, DelegatedPerforming, NamedPlanPerforming {
+  private class Performer: NSObject, ContinuousPerforming, NamedPlanPerforming {
     let target: Any
     required init(target: Any) {
       self.target = target
@@ -121,6 +121,12 @@ class TargetAltering: NSObject, Plan {
       }
     }
     
+    func set(isActiveTokenGenerator: IsActiveTokenGenerating) {
+      if let unwrappedTarget = self.target as? UITextView {
+        unwrappedTarget.text = "delegated"
+      }
+    }
+    
     func setDelegatedPerformance(willStart: @escaping DelegatedPerformanceTokenReturnBlock,
                                  didEnd: @escaping DelegatedPerformanceTokenArgBlock) {
       let token = willStart()!
@@ -128,30 +134,6 @@ class TargetAltering: NSObject, Plan {
         unwrappedTarget.text = "delegated"
       }
       didEnd(token)
-    }
-  }
-}
-
-class NeverEnding: NSObject, Plan {
-  
-  func performerClass() -> AnyClass {
-    return Performer.self
-  }
-  
-  public func copy(with zone: NSZone? = nil) -> Any {
-    return NeverEnding()
-  }
-  
-  private class Performer: NSObject, DelegatedPerforming {
-    let target: Any
-    required init(target: Any) {
-      self.target = target
-    }
-    
-    func setDelegatedPerformance(willStart: @escaping DelegatedPerformanceTokenReturnBlock,
-                                 didEnd: @escaping DelegatedPerformanceTokenArgBlock) {
-      // start, but never finish
-      let _ = willStart()!
     }
   }
 }
