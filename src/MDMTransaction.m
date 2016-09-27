@@ -43,7 +43,7 @@
 }
 
 - (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target withName:(NSString *)name {
-  MDMTransactionLog *log = [self newLogWithPlan:plan target:target name:name];
+  MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:plan target:target name:name];
   if (name.length) {
     Class performerClass = [plan performerClass];
     id performer = [[performerClass alloc] initWithTarget:target];
@@ -56,7 +56,7 @@
 }
 
 - (void)removePlanNamed:(nonnull NSString *)name fromTarget:(nonnull id)target {
-  MDMTransactionLog *log = [self newLogWithPlan:nil target:target name:name];
+  MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:nil target:target name:name];
   if ([_namedPlans containsObject:log]) {
     // need to get the log back from _namedPlans so we can get at the plans
     MDMTransactionLog *retrievedLog = [_namedPlans member:log];
@@ -78,20 +78,21 @@
   return _logs;
 }
 
-- (MDMTransactionLog *)newLogWithPlan:(NSObject<MDMPlan> *)plan target:(id)target name:(NSString *)name {
-  // consider a initWithPlan:target:name initializer on `MDMTransactionLog`?
-  MDMTransactionLog *log = [MDMTransactionLog new];
-  if (plan != nil) {
-    log.plans = @[ plan ];
-  }
-  log.target = target;
-  log.name = name;
-  return log;
-}
-
 @end
 
 @implementation MDMTransactionLog
+
+- (instancetype)initWithPlan:(NSObject<MDMPlan> *)plan target:(id)target name:(NSString *)name {
+  self = [super init];
+  if (self) {
+    if (plan != nil) {
+      _plans = @[ plan ];
+    }
+    _target = target;
+    _name = [name copy];
+  }
+  return self;
+}
 
 - (BOOL)isEqual:(id)other {
   if (other == self) {
