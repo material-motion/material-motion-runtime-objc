@@ -42,7 +42,7 @@
 
 - (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target withName:(NSString *)name {
   MDMTransactionLogType transactionLogType = name == nil ? MDMTransactionLogTypeUncategorized : MDMTransactionLogTypeAddNamedPlan;
-  MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:plan target:target name:name transactionLogType:transactionLogType];
+  MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:[plan copy] target:target name:name transactionLogType:transactionLogType];
   [_logs addObject:log];
 }
 
