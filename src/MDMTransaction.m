@@ -42,32 +42,12 @@
 
 - (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target withName:(NSString *)name {
   MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:plan target:target name:name];
-  if (name.length) {
-    Class performerClass = [plan performerClass];
-    id performer = [[performerClass alloc] initWithTarget:target];
-    if ([performer conformsToProtocol:@protocol(MDMNamedPlanPerforming)]) {
-      [performer addPlan:plan withName:name];
-    }
-  }
   [_logs addObject:log];
 }
 
 - (void)removePlanNamed:(nonnull NSString *)name fromTarget:(nonnull id)target {
   MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:nil target:target name:name];
-  if ([_logs containsObject:log]) {
-    // need to get the log back from _namedPlans so we can get at the plans
-    MDMTransactionLog *retrievedLog = _logs[[_logs indexOfObject:log]];
-    if ([target isEqual:retrievedLog.target]) {
-      for (id<MDMPlan>plan in [retrievedLog plans]) {
-        Class performerClass = [plan performerClass];
-        id performer = [[performerClass alloc] initWithTarget:[retrievedLog target]];
-        if ([performer conformsToProtocol:@protocol(MDMNamedPlanPerforming)]) {
-          [performer removePlanNamed:name];
-        }
-      }
-    }
-    [_logs removeObject:retrievedLog];
-  }
+  [_logs removeObject:log];
 }
 
 - (NSArray<MDMTransactionLog *> *)logs {
