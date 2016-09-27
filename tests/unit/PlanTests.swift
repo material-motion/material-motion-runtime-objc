@@ -47,7 +47,7 @@ class PlanTests: XCTestCase {
   func testAddAndRemoveNamedPlan() {
     transaction.add(plan: immediatelyEndingPlan, to: target, withName: "common_name")
     transaction.add(plan: neverEndingPlan, to: target, withName: "never_ending_plan_name")
-    transaction.remove(name: "never_ending_plan_name")
+    transaction.remove(name: "never_ending_plan_name", from: target)
     
     scheduler.commit(transaction: transaction)
     
@@ -56,7 +56,7 @@ class PlanTests: XCTestCase {
   
   func testRemoveNamedPlanThatIsntThere() {
     transaction.add(plan: targetAlteringPlan, to: target, withName: "target_altering_plan")
-    transaction.remove(name: "was_never_added_plan")
+    transaction.remove(name: "was_never_added_plan", from: target)
     
     scheduler.commit(transaction: transaction)
     
@@ -72,6 +72,16 @@ class PlanTests: XCTestCase {
     
     XCTAssertTrue(target.text! == "done")
   }
+  
+  func testNamedPlansMakeAddAndRemoveCallbacks() {
+    let firstPlan = TargetAltering()
+    transaction.add(plan: firstPlan, to: target, withName: "common_name")
+    transaction.remove(name: "common_name", from: target)
+    
+    scheduler.commit(transaction: transaction)
+    
+    XCTAssertTrue(target.text! == "addedremoved")
+  }
 }
 
 class TargetAltering: NSObject, Plan {
@@ -84,18 +94,22 @@ class TargetAltering: NSObject, Plan {
     return TargetAltering()
   }
   
-  private class Performer: NSObject, DelegatedPerforming, PlanPerforming {
+  private class Performer: NSObject, DelegatedPerforming, NamedPlanPerforming {
     let target: Any
     required init(target: Any) {
       self.target = target
     }
     
-    func add(plan: Plan) {
-      
+    func add(plan: Plan, withName name: String) {
+      if let unwrappedTarget = self.target as? UITextView {
+        unwrappedTarget.text = "added"
+      }
     }
     
-    func remove(plan: Plan) {
-      // tear down any state here?
+    func remove(plan: Plan, withName name: String) {
+      if let unwrappedTarget = self.target as? UITextView {
+        unwrappedTarget.text = "removed"
+      }
     }
     
     func setDelegatedPerformance(willStart: @escaping DelegatedPerformanceTokenReturnBlock,

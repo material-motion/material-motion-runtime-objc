@@ -21,14 +21,14 @@
 
 @implementation MDMTransaction {
   NSMutableArray *_logs;
-  NSMutableDictionary *_namedPlans;
+  NSMutableSet *_namedPlans;
 }
 
 - (instancetype)init {
   self = [super init];
   if (self) {
     _logs = [NSMutableArray array];
-    _namedPlans = [NSMutableDictionary dictionary];
+    _namedPlans = [NSMutableSet set];
   }
   return self;
 }
@@ -38,36 +38,39 @@
 }
 
 - (void)addPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target withName:(NSString *)name {
+  [self removePlanNamed:name fromTarget:target];
   [self commonAddPlan:plan toTarget:target withName:name];
 }
 
 - (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target withName:(NSString *)name {
-  NSObject<MDMPlan> *copiedPlan = [plan copy];
-  MDMTransactionLog *log = [MDMTransactionLog new];
-  log.plans = @[ copiedPlan ];
-  log.target = target;
-  log.name = name;
+  MDMTransactionLog *log = [self newLogWithPlan:plan target:target name:name];
   if (name.length) {
-    _namedPlans[name] = log;
+    Class performerClass = [plan performerClass];
+    id performer = [[performerClass alloc] initWithTarget:target];
+    if ([performer conformsToProtocol:@protocol(MDMNamedPlanPerforming)] &&
+        [performer respondsToSelector:@selector(addPlan:withName:)]) {
+      [performer addPlan:plan withName:name];
+    }
+    [_namedPlans addObject:log];
   }
   [_logs addObject:log];
 }
 
-- (void)removePlanNamed:(nonnull NSString *)name {
-  MDMTransactionLog *planLog = _namedPlans[name];
-  if (planLog != nil && _namedPlans[name] != nil) {
-    for (id<MDMPlan>plan in [planLog plans]) {
-      // unsure of how to get access to the original performer instance when all I get from MDMPlan is `performerClass`
-      // MDMPerformerInfo instances are housed in MDMPerformerGroup and I believe that's where the performer instance is housed. I guess we could open up access to these instances in MDMPerformerGroup ?
-      // creating a new performer here, but unsure if that's the correct way of handling this
-      Class performerClass = [plan performerClass];
-      id<MDMPlanPerforming> performer = [[performerClass alloc] initWithTarget:[planLog target]];
-      if ([performer respondsToSelector:@selector(removePlan:)]) {
-        [performer removePlan:plan];
+- (void)removePlanNamed:(nonnull NSString *)name fromTarget:(nonnull id)target {
+  MDMTransactionLog *log = [self newLogWithPlan:nil target:target name:name];
+  if ([_namedPlans containsObject:log]) {
+    if ([target isEqual:log.target]) {
+      for (id<MDMPlan>plan in [log plans]) {
+        Class performerClass = [plan performerClass];
+        id performer = [[performerClass alloc] initWithTarget:[log target]];
+        if ([performer conformsToProtocol:@protocol(MDMNamedPlanPerforming)] &&
+            [performer respondsToSelector:@selector(removePlan:withName:)]) {
+          [performer removePlan:plan withName:name];
+        }
       }
     }
-    [_namedPlans removeObjectForKey:name];
-    [_logs removeObject:planLog];
+    [_namedPlans removeObject:log];
+    [_logs removeObject:log];
   }
 }
 
@@ -75,7 +78,44 @@
   return _logs;
 }
 
+- (MDMTransactionLog *)newLogWithPlan:(NSObject<MDMPlan> *)plan target:(id)target name:(NSString *)name {
+  // consider a initWithPlan:target:name initializer on `MDMTransactionLog`?
+  MDMTransactionLog *log = [MDMTransactionLog new];
+  if (plan != nil) {
+    log.plans = @[ plan ];
+  }
+  log.target = target;
+  log.name = name;
+  return log;
+}
+
 @end
 
 @implementation MDMTransactionLog
+
+- (BOOL)isEqual:(id)other {
+  if (other == self) {
+    return YES;
+  } else {
+    if ([other isKindOfClass:[MDMTransactionLog class]]) {
+      MDMTransactionLog *otherTransaction = (MDMTransactionLog *)other;
+      if ([self.target isEqual:otherTransaction.target]) {
+        if (self.name != nil) {
+          return [self.name isEqualToString:otherTransaction.name];
+        } else {
+          return otherTransaction.name == nil;
+        }
+      } else {
+        return NO;
+      }
+    } else {
+      return NO;
+    }
+  }
+}
+
+- (NSUInteger)hash {
+  return [self.target hash] ^ [self.name hash];
+}
+
 @end

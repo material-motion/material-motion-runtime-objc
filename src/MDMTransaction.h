@@ -57,6 +57,7 @@ Associates a plan with a given target.
  @param name String identifier for the plan
  */
 - (void)removePlanNamed:(nonnull NSString *)name
-  NS_SWIFT_NAME(remove(name:));
+             fromTarget:(nonnull id)target
+  NS_SWIFT_NAME(remove(name:from:));
 
 @end

@@ -51,11 +51,6 @@ NS_SWIFT_NAME(PlanPerforming)
 - (void)addPlan:(nonnull id<MDMPlan>)plan
     NS_SWIFT_NAME(add(plan:));
 
-@optional
-
-- (void)removePlan:(nonnull id<MDMPlan>)plan
-    NS_SWIFT_NAME(remove(plan:));
-
 @end
 
 #pragma mark - Delegated performing
@@ -117,5 +112,33 @@ NS_SWIFT_NAME(ComposablePerforming)
 /** The performer will be provided with a method for initiating a new transaction. */
 - (void)setTransactionEmitter:(nonnull id<MDMTransactionEmitting>)transactionEmitter
     NS_SWIFT_NAME(set(transactionEmitter:));
+
+@end
+
+/** Specifics for a named plan performer to allow named plans to be added and removed. */
+NS_SWIFT_NAME(NamedPlanPerforming)
+@protocol MDMNamedPlanPerforming <MDMPerforming>
+
+@optional
+
+/**
+ Provides the performer with an plan and a name.
+ 
+ @param plan The plan that required this type of performer.
+ @param name The name by which the plan can be identified.
+ */
+- (void)addPlan:(nonnull id<MDMPlan>)plan
+       withName:(nonnull NSString *)name
+  NS_SWIFT_NAME(add(plan:withName:));
+
+/**
+ Removes a named plan from a performer.
+ 
+ @param plan The plan that required this type of performer.
+ @param name The name by which the plan can be identified.
+ */
+- (void)removePlan:(nonnull id<MDMPlan>)plan
+          withName:(nonnull NSString *)name
+  NS_SWIFT_NAME(remove(plan:withName:));
 
 @end
