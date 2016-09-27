@@ -47,8 +47,7 @@
   if (name.length) {
     Class performerClass = [plan performerClass];
     id performer = [[performerClass alloc] initWithTarget:target];
-    if ([performer conformsToProtocol:@protocol(MDMNamedPlanPerforming)] &&
-        [performer respondsToSelector:@selector(addPlan:withName:)]) {
+    if ([performer conformsToProtocol:@protocol(MDMNamedPlanPerforming)]) {
       [performer addPlan:plan withName:name];
     }
     [_namedPlans addObject:log];
@@ -65,8 +64,7 @@
       for (id<MDMPlan>plan in [retrievedLog plans]) {
         Class performerClass = [plan performerClass];
         id performer = [[performerClass alloc] initWithTarget:[retrievedLog target]];
-        if ([performer conformsToProtocol:@protocol(MDMNamedPlanPerforming)] &&
-            [performer respondsToSelector:@selector(removePlanNamed:)]) {
+        if ([performer conformsToProtocol:@protocol(MDMNamedPlanPerforming)]) {
           [performer removePlanNamed:name];
         }
       }
