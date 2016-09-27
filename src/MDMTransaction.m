@@ -21,14 +21,12 @@
 
 @implementation MDMTransaction {
   NSMutableArray *_logs;
-  NSMutableSet *_namedPlans;
 }
 
 - (instancetype)init {
   self = [super init];
   if (self) {
     _logs = [NSMutableArray array];
-    _namedPlans = [NSMutableSet set];
   }
   return self;
 }
@@ -50,16 +48,15 @@
     if ([performer conformsToProtocol:@protocol(MDMNamedPlanPerforming)]) {
       [performer addPlan:plan withName:name];
     }
-    [_namedPlans addObject:log];
   }
   [_logs addObject:log];
 }
 
 - (void)removePlanNamed:(nonnull NSString *)name fromTarget:(nonnull id)target {
   MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:nil target:target name:name];
-  if ([_namedPlans containsObject:log]) {
+  if ([_logs containsObject:log]) {
     // need to get the log back from _namedPlans so we can get at the plans
-    MDMTransactionLog *retrievedLog = [_namedPlans member:log];
+    MDMTransactionLog *retrievedLog = _logs[[_logs indexOfObject:log]];
     if ([target isEqual:retrievedLog.target]) {
       for (id<MDMPlan>plan in [retrievedLog plans]) {
         Class performerClass = [plan performerClass];
@@ -69,7 +66,6 @@
         }
       }
     }
-    [_namedPlans removeObject:retrievedLog];
     [_logs removeObject:retrievedLog];
   }
 }
