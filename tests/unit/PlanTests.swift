@@ -47,7 +47,7 @@ class PlanTests: XCTestCase {
   func testAddAndRemoveNamedPlan() {
     transaction.add(plan: immediatelyEndingPlan, to: target, withName: "common_name")
     transaction.add(plan: neverEndingPlan, to: target, withName: "never_ending_plan_name")
-    transaction.remove(name: "never_ending_plan_name", from: target)
+    transaction.removePlan(named: "never_ending_plan_name", from: target)
     
     scheduler.commit(transaction: transaction)
     
@@ -56,7 +56,7 @@ class PlanTests: XCTestCase {
   
   func testRemoveNamedPlanThatIsntThere() {
     transaction.add(plan: targetAlteringPlan, to: target, withName: "target_altering_plan")
-    transaction.remove(name: "was_never_added_plan", from: target)
+    transaction.removePlan(named: "was_never_added_plan", from: target)
     
     scheduler.commit(transaction: transaction)
     
@@ -76,7 +76,7 @@ class PlanTests: XCTestCase {
   func testNamedPlansMakeAddAndRemoveCallbacks() {
     let firstPlan = TargetAltering()
     transaction.add(plan: firstPlan, to: target, withName: "common_name")
-    transaction.remove(name: "common_name", from: target)
+    transaction.removePlan(named: "common_name", from: target)
     
     scheduler.commit(transaction: transaction)
     
@@ -106,7 +106,7 @@ class TargetAltering: NSObject, Plan {
       }
     }
     
-    func remove(plan: Plan, withName name: String) {
+    func removePlan(named name: String) {
       if let unwrappedTarget = self.target as? UITextView {
         unwrappedTarget.text = unwrappedTarget.text + "removed"
       }

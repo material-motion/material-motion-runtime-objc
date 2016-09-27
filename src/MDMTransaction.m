@@ -66,8 +66,8 @@
         Class performerClass = [plan performerClass];
         id performer = [[performerClass alloc] initWithTarget:[retrievedLog target]];
         if ([performer conformsToProtocol:@protocol(MDMNamedPlanPerforming)] &&
-            [performer respondsToSelector:@selector(removePlan:withName:)]) {
-          [performer removePlan:plan withName:name];
+            [performer respondsToSelector:@selector(removePlanNamed:)]) {
+          [performer removePlanNamed:name];
         }
       }
     }

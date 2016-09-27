@@ -134,11 +134,9 @@ NS_SWIFT_NAME(NamedPlanPerforming)
 /**
  Removes a named plan from a performer.
  
- @param plan The plan that required this type of performer.
  @param name The name by which the plan can be identified.
  */
-- (void)removePlan:(nonnull id<MDMPlan>)plan
-          withName:(nonnull NSString *)name
-  NS_SWIFT_NAME(remove(plan:withName:));
+- (void)removePlanNamed:(nonnull NSString *)name
+  NS_SWIFT_NAME(removePlan(named:));
 
 @end
