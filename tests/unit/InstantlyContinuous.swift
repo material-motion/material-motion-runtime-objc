@@ -14,24 +14,30 @@
  limitations under the License.
  */
 
-import XCTest
 import MaterialMotionRuntime
 
-// Tests related to performer delegation.
-@available(iOS, deprecated)
-class DelegationTests: XCTestCase {
+/**
+ A plan that immediately starts and completes some delegated work the first time a plan is
+ added to a target.
+ */
+class InstantlyContinuous: NSObject, Plan {
+  func performerClass() -> AnyClass {
+    return Performer.self
+  }
 
-  func testDelegationPerformerCausesActivityStateChange() {
-    let scheduler = Scheduler()
+  public func copy(with zone: NSZone? = nil) -> Any {
+    return InstantlyContinuous()
+  }
 
-    let delegate = TestSchedulerDelegate()
-    scheduler.delegate = delegate
+  private class Performer: NSObject, ContinuousPerforming {
+    let target: Any
+    required init(target: Any) {
+      self.target = target
+    }
 
-    let transaction = Transaction()
-    transaction.add(plan: NoopDelegation(), to: NSObject())
-    scheduler.commit(transaction: transaction)
-
-    XCTAssertTrue(delegate.activityStateDidChange)
-    XCTAssertTrue(scheduler.activityState == .idle)
+    func set(isActiveTokenGenerator: IsActiveTokenGenerating) {
+      let token = isActiveTokenGenerator.generate()!
+      token.terminate()
+    }
   }
 }

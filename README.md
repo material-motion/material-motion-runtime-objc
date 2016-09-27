@@ -56,7 +56,9 @@ commands:
 1. [Architecture](#architecture)
 2. [How to define a new plan and performer type](#how-to-create-a-new-plan-and-performer-type)
 3. [How to commit a plan to a scheduler](#how-to-commit-a-plan-to-a-scheduler)
-4. [Configuring performers with plans](#configuring-performers-with-plans)
+4. [How to configure performers with plans](#how-to-configure-performers-with-plans)
+5. [How to use composition to fulfill plans](#how-to-use-composition-to-fulfill-plans)
+6. [How to indicate continuous performance](#how-to-indicate-continuous-performance)
 
 ### Architecture
 
@@ -131,15 +133,15 @@ class <#Plan#>: NSObject {
 
 Performers are responsible for fulfilling plans. Fulfillment is possible in a variety of ways:
 
-- [PlanPerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMPlanPerforming.html): [Configuring performers with plans](#configuring-performers-with-plans)
+- [PlanPerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMPlanPerforming.html): [How to configure performers with plans](#how-to-configure-performers-with-plans)
 - [DelegatedPerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMDelegatedPerforming.html)
-- [ComposablePerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMComposablePerforming.html)
+- [ComposablePerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMComposablePerforming.html): [How to use composition to fulfill plans](#how-to-use-composition-to-fulfill-plans)
 
 See the associated links for more details on each performing type.
 
 > Note: only one instance of a type of performer **per target** is ever created. This allows you to
 > register multiple plans to the same target in order to configure a performer. See
-> [Configuring performers with plans](#configuring-performers-with-plans) for more details.
+> [How to configure performers with plans](#how-to-configure-performers-with-plans) for more details.
 
 Code snippets:
 
@@ -280,7 +282,7 @@ Code snippets:
 scheduler.commit(transaction: transaction)
 ```
 
-### Configuring performers with plans
+### How to configure performers with plans
 
 Configuring performers with plans starts by making your performer conform to
 [PlanPerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMPlanPerforming.html).
@@ -340,6 +342,165 @@ func add(plan: Plan) {
     assert(false)
   }
 }
+```
+
+### How to use composition to fulfill plans
+
+A composition performer is able to emit new transactions using an emitter object. This feature
+enables the reuse of plans and the creation of higher-order abstractions.
+
+#### Step 1: Conform to ComposablePerforming and store the transaction emitter
+
+Code snippets:
+
+***In Objective-C:***
+
+```objc
+@interface <#Performer#> ()
+@property(nonatomic, strong) id<MDMTransactionEmitting> transactionEmitter;
+@end
+
+@interface <#Performer#> (Composition) <MDMComposablePerforming>
+@end
+
+@implementation <#Performer#> (Composition)
+
+- (void)setTransactionEmitter:(id<MDMTransactionEmitting>)transactionEmitter {
+  self.transactionEmitter = transactionEmitter;
+}
+
+@end
+```
+
+***In Swift:***
+
+```swift
+// Store the emitter in your class' definition.
+class <#Performer#>: ... {
+  ...
+  var emitter: TransactionEmitting!
+  ...
+}
+
+extension <#Performer#>: ComposablePerforming {
+  func set(transactionEmitter: TransactionEmitting) {
+    emitter = transactionEmitter
+  }
+}
+```
+
+#### Step 2: Emit transactions using the emitter
+
+As a general practice performers should only associate plans with their target. If you find that a
+performer needs to associate plans with more than one target, you may want to consider whether a
+[director](https://material-motion.gitbooks.io/material-motion-starmap/content/specifications/directors.html)
+is a more applicable place to put this logic.
+
+Code snippets:
+
+***In Objective-C:***
+
+```objc
+MDMTransaction *transaction = [MDMTransaction new];
+[transaction addPlan:<#(nonnull id<MDMPlan>)#> toTarget:self.target];
+[self.transactionEmitter emitTransaction:transaction];
+```
+
+***In Swift:***
+
+```swift
+let transaction = Transaction()
+transaction.add(plan: <#T##Plan#>, to: target)
+emitter.emit(transaction: transaction)
+```
+
+### How to indicate continuous performance
+
+Oftentimes performers will perform their actions over a period of time or while an interaction is
+active. These types of performers are called continuous performers.
+
+A continuous performer is able to affect the active state of the scheduler by generating is-active
+tokens. The scheduler is considered active so long as an is-active token exists and has not been
+terminated. Continuous performers are expected to terminate a token when its corresponding work has
+completed.
+
+For example, a performer that registers a platform animation might generate a token when the
+animation starts. When the animation completes the token would be terminated.
+
+#### Step 1: Conform to ContinuousPerforming and store the token generator
+
+Code snippets:
+
+***In Objective-C:***
+
+```objc
+@interface <#Performer#> ()
+@property(nonatomic, strong) id<MDMIsActiveTokenGenerating> tokenGenerator;
+@end
+
+@interface <#Performer#> (Composition) <MDMComposablePerforming>
+@end
+
+@implementation <#Performer#> (Composition)
+
+- (void)setIsActiveTokenGenerator:(id<MDMIsActiveTokenGenerating>)isActiveTokenGenerator {
+  self.tokenGenerator = isActiveTokenGenerator;
+}
+
+@end
+```
+
+***In Swift:***
+
+```swift
+// Store the emitter in your class' definition.
+class <#Performer#>: ... {
+  ...
+  var tokenGenerator: IsActiveTokenGenerating!
+  ...
+}
+
+extension <#Performer#>: ContinuousPerforming {
+  func set(isActiveTokenGenerator: IsActiveTokenGenerating) {
+    tokenGenerator = isActiveTokenGenerator
+  }
+}
+```
+
+#### Step 2: Generate a token when some continuous work has started
+
+You will likely need to store the token in order to be able to reference it at a later point.
+
+Code snippets:
+
+***In Objective-C:***
+
+```objc
+id<MDMIsActiveTokenable> token = [self.tokenGenerator generate];
+tokenMap[animation] = token;
+```
+
+***In Swift:***
+
+```swift
+let token = tokenGenerator.generate()!
+tokenMap[animation] = token
+```
+
+#### Step 3: Terminate the token when work has completed
+
+Code snippets:
+
+***In Objective-C:***
+
+```objc
+[token terminate];
+```
+
+***In Swift:***
+
+```swift
+token.terminate()
 ```
 
 ## Contributing

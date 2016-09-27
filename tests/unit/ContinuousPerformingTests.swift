@@ -17,21 +17,34 @@
 import XCTest
 import MaterialMotionRuntime
 
-// Tests related to performer delegation.
-@available(iOS, deprecated)
-class DelegationTests: XCTestCase {
+// Tests related to continuous performers.
+class ContinuousPerformingTests: XCTestCase {
 
-  func testDelegationPerformerCausesActivityStateChange() {
+  func testContinuousPerformerCausesActivityStateChange() {
     let scheduler = Scheduler()
 
     let delegate = TestSchedulerDelegate()
     scheduler.delegate = delegate
 
     let transaction = Transaction()
-    transaction.add(plan: NoopDelegation(), to: NSObject())
+    transaction.add(plan: InstantlyContinuous(), to: NSObject())
     scheduler.commit(transaction: transaction)
 
     XCTAssertTrue(delegate.activityStateDidChange)
     XCTAssertTrue(scheduler.activityState == .idle)
+  }
+
+  func testForeverContinuousPerformerCausesActivityStateChange() {
+    let scheduler = Scheduler()
+
+    let delegate = TestSchedulerDelegate()
+    scheduler.delegate = delegate
+
+    let transaction = Transaction()
+    transaction.add(plan: ForeverContinuous(), to: NSObject())
+    scheduler.commit(transaction: transaction)
+
+    XCTAssertTrue(delegate.activityStateDidChange)
+    XCTAssertTrue(scheduler.activityState == .active)
   }
 }

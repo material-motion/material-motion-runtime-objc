@@ -124,7 +124,7 @@ class SchedulerTests: XCTestCase {
 
     let transaction = Transaction()
     transaction.add(plan: ChangeBoolean(desiredBoolean: true), to: state)
-    transaction.add(plan: NoopDelegation(), to: state)
+    transaction.add(plan: InstantlyContinuous(), to: state)
     scheduler.commit(transaction: transaction)
 
     waitForExpectations(timeout: 0.1)
@@ -154,6 +154,61 @@ class SchedulerTests: XCTestCase {
 
   // Verify that we're unable to request a delegated performance token after the scheduler has been
   // released.
+  func testPostDeallocTokenGenerationIsIgnored() {
+    var scheduler: Scheduler? = Scheduler()
+
+    let transaction = Transaction()
+    let plan = HijackedIsActiveTokenGenerator()
+    transaction.add(plan: plan, to: NSObject())
+    scheduler!.commit(transaction: transaction)
+
+    // Force the scheduler to be deallocated.
+    scheduler = nil
+
+    XCTAssertNil(plan.state.tokenGenerator!.generate())
+  }
+
+  // A plan that enables hijacking of the delegated performance token blocks.
+  private class HijackedIsActiveTokenGenerator: NSObject, Plan {
+    // We must store the generator in an intermediary "state" object that we can share across plan
+    // copies. This breaks the separation of concerns between plans and performers and should not
+    // be used in a production setting.
+    class State {
+      var tokenGenerator: IsActiveTokenGenerating?
+    }
+    var state = State()
+
+    func performerClass() -> AnyClass {
+      return Performer.self
+    }
+
+    public func copy(with zone: NSZone? = nil) -> Any {
+      let copy = HijackedIsActiveTokenGenerator()
+      copy.state = state
+      return copy
+    }
+
+    private class Performer: NSObject, PlanPerforming, ContinuousPerforming {
+      let target: Any
+      required init(target: Any) {
+        self.target = target
+      }
+
+      func add(plan: Plan) {
+        let delayedDelegation = plan as! HijackedIsActiveTokenGenerator
+        delayedDelegation.state.tokenGenerator = tokenGenerator
+      }
+
+      var tokenGenerator: IsActiveTokenGenerating!
+      func set(isActiveTokenGenerator: IsActiveTokenGenerating) {
+        tokenGenerator = isActiveTokenGenerator
+      }
+    }
+  }
+
+  // Verify that we're unable to request a delegated performance token after the scheduler has been
+  // released.
+  @available(iOS, deprecated)
   func testDelayedDelegationIsIgnored() {
     var scheduler: Scheduler? = Scheduler()
 
@@ -170,9 +225,11 @@ class SchedulerTests: XCTestCase {
   }
 
   // A fake token for use in tests.
+  @available(iOS, deprecated)
   private class FakeToken: NSObject, DelegatedPerformingToken {}
 
   // A plan that enables hijacking of the delegated performance token blocks.
+  @available(iOS, deprecated)
   private class HijackedDelegation: NSObject, Plan {
     class State {
       var willStart: DelegatedPerformanceTokenReturnBlock?

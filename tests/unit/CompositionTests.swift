@@ -32,14 +32,14 @@ class CompositionTests: XCTestCase {
     scheduler.delegate = delegate
 
     let transaction = Transaction()
-    transaction.add(plan: Emit(plan: NoopDelegation()), to: NSObject())
+    transaction.add(plan: Emit(plan: InstantlyContinuous()), to: NSObject())
     scheduler.commit(transaction: transaction)
 
     // The following steps are now expected to have occurred:
     //
     // 1. The Emit plan was committed to the scheduler.
-    // 2. The Emit plan's performer emitted the NoopDelegation plan.
-    // 3. The NoopDelegation plan changed the scheduler's activity state by immediately starting
+    // 2. The Emit plan's performer emitted the InstantlyContinuous plan.
+    // 3. The InstantlyContinuous plan changed the scheduler's activity state by immediately starting
     //    and completing some delegated work.
 
     XCTAssertTrue(delegate.activityStateDidChange)

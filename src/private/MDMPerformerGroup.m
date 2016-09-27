@@ -16,7 +16,9 @@
 
 #import "MDMPerformerGroup.h"
 
+#import "MDMIsActiveTokenGenerator.h"
 #import "MDMPerformerGroupDelegate.h"
+#import "MDMPerformerInfo.h"
 #import "MDMPerforming.h"
 #import "MDMPlan.h"
 #import "MDMScheduler.h"
@@ -24,34 +26,21 @@
 #import "MDMTransaction+Private.h"
 #import "MDMTransactionEmitter.h"
 
+// TODO: Remove upon deletion of deprecation delegation APIs.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 @interface MDMDelegatedPerformanceToken : NSObject <MDMDelegatedPerformingToken>
 @end
+#pragma clang diagnostic pop
 
 @implementation MDMDelegatedPerformanceToken
 @end
 
-@interface MDMPerformerInfo : NSObject
-@property(nonatomic, nonnull, strong) id<MDMPerforming> performer;
-@property(nonatomic, nonnull, strong) NSMutableSet<MDMDelegatedPerformanceToken *> *delegatedPerformanceTokens;
-@end
-
-@implementation MDMPerformerInfo
-
-- (instancetype)init {
-  self = [super init];
-  if (self) {
-    _delegatedPerformanceTokens = [NSMutableSet set];
-  }
-  return self;
-}
-
-@end
-
 @interface MDMPerformerGroup ()
 @property(nonatomic, weak) MDMScheduler *scheduler;
-@property(nonatomic, strong) NSMutableArray<MDMPerformerInfo *> *performerInfos;
-@property(nonatomic, strong) NSMutableDictionary *performerClassNameToPerformerInfo;
-@property(nonatomic, strong) NSMutableSet *activePerformers;
+@property(nonatomic, strong, readonly) NSMutableArray<MDMPerformerInfo *> *performerInfos;
+@property(nonatomic, strong, readonly) NSMutableDictionary *performerClassNameToPerformerInfo;
+@property(nonatomic, strong, readonly) NSMutableSet *activePerformers;
 @end
 
 @implementation MDMPerformerGroup
@@ -102,6 +91,26 @@
   }
 }
 
+- (void)registerIsActiveToken:(id<MDMIsActiveTokenable>)token
+            withPerformerInfo:(MDMPerformerInfo *)performerInfo {
+  NSAssert(performerInfo.performer, @"Performer no longer exists.");
+
+  [performerInfo.isActiveTokens addObject:token];
+
+  [self didRegisterTokenForPerformerInfo:performerInfo];
+}
+
+- (void)terminateIsActiveToken:(id<MDMIsActiveTokenable>)token
+             withPerformerInfo:(MDMPerformerInfo *)performerInfo {
+  NSAssert(performerInfo.performer, @"Performer no longer exists.");
+  NSAssert([performerInfo.isActiveTokens containsObject:token],
+           @"Token is not active. May have already been terminated by a previous invocation.");
+
+  [performerInfo.isActiveTokens removeObject:token];
+
+  [self didTerminateTokenForPerformerInfo:performerInfo];
+}
+
 #pragma mark - Private
 
 - (id<MDMPerforming>)performerForPlan:(id<MDMPlan>)plan isNew:(BOOL *)isNew {
@@ -140,9 +149,22 @@
     [composablePerformer setTransactionEmitter:emitter];
   }
 
+  // Is-active performance
+
+  if ([performer respondsToSelector:@selector(setIsActiveTokenGenerator:)]) {
+    id<MDMContinuousPerforming> continuousPerformer = (id<MDMContinuousPerforming>)performer;
+
+    MDMIsActiveTokenGenerator *generator = [[MDMIsActiveTokenGenerator alloc] initWithPerformerGroup:self
+                                                                                       performerInfo:performerInfo];
+    [continuousPerformer setIsActiveTokenGenerator:generator];
+  }
+
   // Delegated performance
+  // TODO: Remove upon deletion of deprecation delegation APIs.
 
   if ([performer respondsToSelector:@selector(setDelegatedPerformanceWillStart:didEnd:)]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     id<MDMDelegatedPerforming> delegatedPerformer = (id<MDMDelegatedPerforming>)performer;
 
     __weak MDMPerformerInfo *weakInfo = performerInfo;
@@ -164,13 +186,7 @@
       // TODO(featherless): If/when we explore multi-threaded schedulers we need to more cleanly
       // propagate activity state up to the Scheduler. As it stands, this code is not thread-safe.
 
-      BOOL wasInactive = strongSelf.activePerformers.count == 0;
-
-      [strongSelf.activePerformers addObject:strongInfo.performer];
-
-      if (wasInactive) {
-        [strongSelf.delegate performerGroup:strongSelf activeStateDidChange:YES];
-      }
+      [self didRegisterTokenForPerformerInfo:performerInfo];
 
       return (id<MDMDelegatedPerformingToken>)token;
     };
@@ -186,16 +202,31 @@
                @"Token is not active. May have already been terminated by a previous invocation.");
       [strongInfo.delegatedPerformanceTokens removeObject:token];
 
-      if (strongInfo.delegatedPerformanceTokens.count == 0) {
-        [strongSelf.activePerformers removeObject:strongInfo.performer];
-
-        if (strongSelf.activePerformers.count == 0) {
-          [strongSelf.delegate performerGroup:strongSelf activeStateDidChange:NO];
-        }
-      }
+      [strongSelf didTerminateTokenForPerformerInfo:strongInfo];
     };
 
     [delegatedPerformer setDelegatedPerformanceWillStart:willStartBlock didEnd:didEndBlock];
+#pragma clang diagnostic pop
+  }
+}
+
+- (void)didRegisterTokenForPerformerInfo:(MDMPerformerInfo *)performerInfo {
+  BOOL wasInactive = self.activePerformers.count == 0;
+
+  [self.activePerformers addObject:performerInfo.performer];
+
+  if (wasInactive) {
+    [self.delegate performerGroup:self activeStateDidChange:YES];
+  }
+}
+
+- (void)didTerminateTokenForPerformerInfo:(MDMPerformerInfo *)performerInfo {
+  if (performerInfo.isActiveTokens.count == 0 && performerInfo.delegatedPerformanceTokens.count == 0) {
+    [self.activePerformers removeObject:performerInfo.performer];
+
+    if (self.activePerformers.count == 0) {
+      [self.delegate performerGroup:self activeStateDidChange:NO];
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 PODS:
   - CatalogByConvention (1.0.1)
-  - MaterialMotionRuntime (2.0.1)
+  - MaterialMotionRuntime (3.0.0)
 
 DEPENDENCIES:
   - CatalogByConvention
@@ -12,8 +12,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   CatalogByConvention: 0e471a53b232b83be30141379b3ff0ad3365c3ec
-  MaterialMotionRuntime: 142f75ce2cf2682458aa9631541b8644b653ef34
+  MaterialMotionRuntime: 53a3cfc951da9b21a3f7932ed065e1cfe291bd19
 
-PODFILE CHECKSUM: f871d72adea52ae35d40466f5bf91eeabe96111e
+PODFILE CHECKSUM: 9e94138f00d1278bbeace599bb54e71380faeee2
 
-COCOAPODS: 1.0.1
+COCOAPODS: 1.1.0.rc.2

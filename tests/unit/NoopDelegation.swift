@@ -20,6 +20,7 @@ import MaterialMotionRuntime
  A plan that immediately starts and completes some delegated work the first time a plan is
  added to a target.
  */
+@available(iOS, deprecated)
 class NoopDelegation: NSObject, Plan {
   func performerClass() -> AnyClass {
     return Performer.self

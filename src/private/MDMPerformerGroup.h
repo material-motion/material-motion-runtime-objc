@@ -16,9 +16,11 @@
 
 #import <Foundation/Foundation.h>
 
+@class MDMPerformerInfo;
 @class MDMScheduler;
 @class MDMTrace;
 @class MDMTransactionLog;
+@protocol MDMIsActiveTokenable;
 @protocol MDMPerformerGroupDelegate;
 
 /** An entity responsible for managing the performers associated with a given target. */
@@ -35,5 +37,10 @@
 @property(nonatomic, nullable) id schedulerTarget;
 
 - (void)executeLog:(nonnull MDMTransactionLog *)log trace:(nonnull MDMTrace *)trace;
+
+- (void)registerIsActiveToken:(nonnull id<MDMIsActiveTokenable>)token
+            withPerformerInfo:(nonnull MDMPerformerInfo *)performerInfo;
+- (void)terminateIsActiveToken:(nonnull id<MDMIsActiveTokenable>)token
+             withPerformerInfo:(nonnull MDMPerformerInfo *)performerInfo;
 
 @end

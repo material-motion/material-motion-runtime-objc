@@ -14,24 +14,14 @@
  limitations under the License.
  */
 
-import XCTest
-import MaterialMotionRuntime
+#import <Foundation/Foundation.h>
 
-// Tests related to performer delegation.
-@available(iOS, deprecated)
-class DelegationTests: XCTestCase {
+@protocol MDMPerforming;
+@protocol MDMIsActiveTokenable;
+@class MDMDelegatedPerformanceToken;
 
-  func testDelegationPerformerCausesActivityStateChange() {
-    let scheduler = Scheduler()
-
-    let delegate = TestSchedulerDelegate()
-    scheduler.delegate = delegate
-
-    let transaction = Transaction()
-    transaction.add(plan: NoopDelegation(), to: NSObject())
-    scheduler.commit(transaction: transaction)
-
-    XCTAssertTrue(delegate.activityStateDidChange)
-    XCTAssertTrue(scheduler.activityState == .idle)
-  }
-}
+@interface MDMPerformerInfo : NSObject
+@property(nonatomic, nonnull, strong) id<MDMPerforming> performer;
+@property(nonatomic, nonnull, strong) NSMutableSet<id<MDMIsActiveTokenable>> *isActiveTokens;
+@property(nonatomic, nonnull, strong) NSMutableSet<MDMDelegatedPerformanceToken *> *delegatedPerformanceTokens;
+@end
