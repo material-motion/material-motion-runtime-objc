@@ -102,13 +102,13 @@ class TargetAltering: NSObject, Plan {
     
     func add(plan: Plan, withName name: String) {
       if let unwrappedTarget = self.target as? UITextView {
-        unwrappedTarget.text = "added"
+        unwrappedTarget.text = unwrappedTarget.text + "added"
       }
     }
     
     func remove(plan: Plan, withName name: String) {
       if let unwrappedTarget = self.target as? UITextView {
-        unwrappedTarget.text = "removed"
+        unwrappedTarget.text = unwrappedTarget.text + "removed"
       }
     }
     

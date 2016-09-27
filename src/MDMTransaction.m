@@ -59,18 +59,20 @@
 - (void)removePlanNamed:(nonnull NSString *)name fromTarget:(nonnull id)target {
   MDMTransactionLog *log = [self newLogWithPlan:nil target:target name:name];
   if ([_namedPlans containsObject:log]) {
-    if ([target isEqual:log.target]) {
-      for (id<MDMPlan>plan in [log plans]) {
+    // need to get the log back from _namedPlans so we can get at the plans
+    MDMTransactionLog *retrievedLog = [_namedPlans member:log];
+    if ([target isEqual:retrievedLog.target]) {
+      for (id<MDMPlan>plan in [retrievedLog plans]) {
         Class performerClass = [plan performerClass];
-        id performer = [[performerClass alloc] initWithTarget:[log target]];
+        id performer = [[performerClass alloc] initWithTarget:[retrievedLog target]];
         if ([performer conformsToProtocol:@protocol(MDMNamedPlanPerforming)] &&
             [performer respondsToSelector:@selector(removePlan:withName:)]) {
           [performer removePlan:plan withName:name];
         }
       }
     }
-    [_namedPlans removeObject:log];
-    [_logs removeObject:log];
+    [_namedPlans removeObject:retrievedLog];
+    [_logs removeObject:retrievedLog];
   }
 }
 
