@@ -160,7 +160,7 @@ class IncrementerTargetPlan: NSObject, Plan {
       self.target = target
     }
     
-    func add(plan: Plan, withName name: String) {
+    func add(plan: Plan, named name: String) {
       if let unwrappedTarget = self.target as? IncrementerTarget {
         unwrappedTarget.counter = unwrappedTarget.counter + 1
       }

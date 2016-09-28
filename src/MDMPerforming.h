@@ -153,14 +153,14 @@ NS_SWIFT_NAME(NamedPlanPerforming)
 @protocol MDMNamedPlanPerforming <MDMPerforming>
 
 /**
- Provides the performer with an plan and a name.
+ Provides the performer with a plan and an associated name.
 
  @param plan The plan that required this type of performer.
  @param name The name by which the plan can be identified.
  */
 - (void)addPlan:(nonnull id<MDMPlan>)plan
-       withName:(nonnull NSString *)name
-  NS_SWIFT_NAME(add(plan:withName:));
+          named:(nonnull NSString *)name
+  NS_SWIFT_NAME(addPlan(plan:named:));
 
 /**
  Removes a named plan from a performer.

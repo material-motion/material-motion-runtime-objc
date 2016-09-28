@@ -74,19 +74,16 @@
     }
     
     // MDMNamedPlanPerforming callbacks
-    switch (log.transactionLogType) {
-      case MDMTransactionLogTypeAddNamedPlan: {
-        if ([performer respondsToSelector:@selector(addPlan:withName:)]) {
-          [(id<MDMNamedPlanPerforming>)performer addPlan:plan withName:log.name];
-        }
-      } break;
-      case MDMTransactionLogTypeRemoveNamedPlan: {
+    if (log.name.length) {
+      if (log.isRemoval) {
         if ([performer respondsToSelector:@selector(removePlanNamed:)]) {
           [(id<MDMNamedPlanPerforming>)performer removePlanNamed:log.name];
         }
-      } break;
-      default:
-        break;
+      } else {
+        if ([performer respondsToSelector:@selector(addPlan:named:)]) {
+          [(id<MDMNamedPlanPerforming>)performer addPlan:plan named:log.name];
+        }
+      }
     }
   }
 }
