@@ -82,16 +82,16 @@ class PlanTests: XCTestCase {
     XCTAssertTrue(target.text! == "delegatedadded")
   }
   
-  func testNamedPlansMakeAddAndRemoveCallbacks() {
+  func testNamedPlansMakeAddCallbacks() {
     let firstPlan = TargetAltering()
-    transaction.add(plan: firstPlan, to: target, withName: "common_name")
-    transaction.removePlan(named: "common_name", from: target)
+    transaction.add(plan: firstPlan, to: target, withName: "one_name")
+    transaction.add(plan: firstPlan, to: target, withName: "two_name")
     
     XCTAssertTrue(target.text! == "")
     
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(target.text! == "")
+    XCTAssertTrue(target.text! == "delegatedaddedadded")
   }
   
   func testAddingTheSameNamedPlanTwiceToTheSameTarget() {
@@ -102,6 +102,18 @@ class PlanTests: XCTestCase {
     scheduler.commit(transaction: transaction)
     
     XCTAssertTrue(incrementerTarget.counter == 1)
+  }
+
+  func testAddingTheSamePlanWithSimilarNamesToTheSameTarget() {
+    let firstPlan = IncrementerTargetPlan()
+    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "one")
+    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "One")
+    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "1")
+    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "ONE")
+    
+    scheduler.commit(transaction: transaction)
+    
+    XCTAssertTrue(incrementerTarget.counter == 4)
   }
   
   func testAddingTheSamePlanWithDifferentNamesToTheSameTarget() {

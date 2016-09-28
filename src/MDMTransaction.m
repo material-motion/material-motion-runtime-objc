@@ -90,7 +90,7 @@
 }
 
 - (NSUInteger)hash {
-  return [self.target hash] ^ [self.name hash] ^ self.transactionLogType;
+  return [self.target hash] ^ [self.name hash];
 }
 
 @end
