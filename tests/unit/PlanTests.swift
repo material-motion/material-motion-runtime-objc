@@ -20,6 +20,7 @@ import MaterialMotionRuntime
 class PlanTests: XCTestCase {
   
   var target:UITextView!
+  var incrementerTarget:IncrementerTarget!
   var scheduler:Scheduler!
   var transaction:Transaction!
   var immediatelyEndingPlan:Plan!
@@ -28,7 +29,8 @@ class PlanTests: XCTestCase {
   
   override func setUp() {
     super.setUp()
-    target = UITextView.init()
+    target = UITextView()
+    incrementerTarget = IncrementerTarget()
     scheduler = Scheduler()
     transaction = Transaction()
     immediatelyEndingPlan = Emit(plan: InstantlyContinuous())
@@ -90,6 +92,73 @@ class PlanTests: XCTestCase {
     scheduler.commit(transaction: transaction)
     
     XCTAssertTrue(target.text! == "")
+  }
+  
+  func testAddingTheSameNamedPlanTwiceToTheSameTarget() {
+    let firstPlan = IncrementerTargetPlan()
+    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "one")
+    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "one")
+    
+    scheduler.commit(transaction: transaction)
+    
+    XCTAssertTrue(incrementerTarget.counter == 1)
+  }
+  
+  func testAddingTheSamePlanWithDifferentNamesToTheSameTarget() {
+    let firstPlan = IncrementerTargetPlan()
+    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "one")
+    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "two")
+    
+    scheduler.commit(transaction: transaction)
+    
+    XCTAssertTrue(incrementerTarget.counter == 2)
+  }
+  
+  func testAddingTheSameNamedPlanToDifferentTargets() {
+    let firstPlan = IncrementerTargetPlan()
+    let secondIncrementerTarget = IncrementerTarget()
+    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "one")
+    transaction.add(plan: firstPlan, to: secondIncrementerTarget, withName: "one")
+    
+    scheduler.commit(transaction: transaction)
+    
+    XCTAssertTrue(incrementerTarget.counter == 1)
+    XCTAssertTrue(secondIncrementerTarget.counter == 1)
+  }
+ 
+}
+
+class IncrementerTarget: NSObject {
+  var counter = 0
+}
+
+class IncrementerTargetPlan: NSObject, Plan {
+  
+  func performerClass() -> AnyClass {
+    return Performer.self
+  }
+  
+  public func copy(with zone: NSZone? = nil) -> Any {
+    return IncrementerTargetPlan()
+  }
+  
+  private class Performer: NSObject, NamedPlanPerforming {
+    let target: Any
+    required init(target: Any) {
+      self.target = target
+    }
+    
+    func add(plan: Plan, withName name: String) {
+      if let unwrappedTarget = self.target as? IncrementerTarget {
+        unwrappedTarget.counter = unwrappedTarget.counter + 1
+      }
+    }
+    
+    func removePlan(named name: String) {
+      if let unwrappedTarget = self.target as? IncrementerTarget {
+        unwrappedTarget.counter = unwrappedTarget.counter - 1
+      }
+    }
   }
 }
 

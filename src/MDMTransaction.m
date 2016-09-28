@@ -76,16 +76,12 @@
   if (other == self) {
     return YES;
   } else {
-    if ([other isKindOfClass:[MDMTransactionLog class]]) {
-      MDMTransactionLog *otherTransaction = (MDMTransactionLog *)other;
-      if ([self.target isEqual:otherTransaction.target]) {
-        if (self.name != nil) {
-          return [self.name isEqualToString:otherTransaction.name];
-        } else {
-          return otherTransaction.name == nil;
-        }
+    MDMTransactionLog *otherTransaction = (MDMTransactionLog *)other;
+    if ([self.target isEqual:otherTransaction.target]) {
+      if (self.name != nil) {
+        return [self.name isEqualToString:otherTransaction.name];
       } else {
-        return NO;
+        return otherTransaction.name == nil;
       }
     } else {
       return NO;
@@ -94,7 +90,7 @@
 }
 
 - (NSUInteger)hash {
-  return [self.target hash] ^ [self.name hash];
+  return [self.target hash] ^ [self.name hash] ^ self.transactionLogType;
 }
 
 @end
