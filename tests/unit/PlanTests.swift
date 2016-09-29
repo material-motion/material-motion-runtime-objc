@@ -160,7 +160,7 @@ class IncrementerTargetPlan: NSObject, Plan {
       self.target = target
     }
     
-    func add(plan: Plan, named name: String) {
+    func addPlan(plan: Plan, named name: String) {
       if let unwrappedTarget = self.target as? IncrementerTarget {
         unwrappedTarget.counter = unwrappedTarget.counter + 1
       }
@@ -189,8 +189,8 @@ class TargetAltering: NSObject, Plan {
     required init(target: Any) {
       self.target = target
     }
-    
-    func add(plan: Plan, withName name: String) {
+
+    func addPlan(plan: Plan, named name: String) {
       if let unwrappedTarget = self.target as? UITextView {
         unwrappedTarget.text = unwrappedTarget.text + "added"
       }
