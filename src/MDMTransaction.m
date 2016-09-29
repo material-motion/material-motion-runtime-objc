@@ -36,8 +36,14 @@
 }
 
 - (void)addPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target named:(NSString *)name {
-  [self removePlanNamed:name fromTarget:target];
+  if (name.length && [self planForName:name withTarget:target]) {
+    [self commonRemovePlan:plan fromTarget:target named:name];
+  }
   [self commonAddPlan:plan toTarget:target withName:name];
+}
+
+- (void)removePlanNamed:(nonnull NSString *)name fromTarget:(nonnull id)target {
+  [self commonRemovePlan:[self planForName:name withTarget:target] fromTarget:target named:name];
 }
 
 - (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target withName:(NSString *)name {
@@ -45,13 +51,22 @@
   [_logs addObject:log];
 }
 
-- (void)removePlanNamed:(nonnull NSString *)name fromTarget:(nonnull id)target {
-  MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:nil target:target name:name removal:YES];
+- (void)commonRemovePlan:(NSObject<MDMPlan> *)plan fromTarget:(nonnull id)target named:(NSString *)named {
+  MDMTransactionLog *log = [[MDMTransactionLog alloc] initWithPlan:plan target:target name:named removal:TRUE];
   [_logs addObject:log];
 }
 
 - (NSArray<MDMTransactionLog *> *)logs {
   return _logs;
+}
+
+- (id<MDMPlan>)planForName:(NSString *)name withTarget:(id)target {
+  for (MDMTransactionLog *log in _logs) {
+    if ([log.name isEqualToString:name] && [log.target isEqual:target] && log.plans.count) {
+      return log.plans[0];
+    }
+  }
+  return nil;
 }
 
 @end

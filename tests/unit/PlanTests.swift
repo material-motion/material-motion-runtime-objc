@@ -24,7 +24,7 @@ class PlanTests: XCTestCase {
   var scheduler:Scheduler!
   var transaction:Transaction!
   var immediatelyEndingPlan:Plan!
-  var foreverContinuous:Plan!
+  var namedForeverContinuous:Plan!
   var targetAlteringPlan:Plan!
   
   override func setUp() {
@@ -34,13 +34,13 @@ class PlanTests: XCTestCase {
     scheduler = Scheduler()
     transaction = Transaction()
     immediatelyEndingPlan = Emit(plan: InstantlyContinuous())
-    foreverContinuous = ForeverContinuous()
+    namedForeverContinuous = NamedForeverContinuous()
     targetAlteringPlan = TargetAltering()
     target.text = ""
   }
   
   func testAddingNamedPlan() {
-    transaction.add(plan: foreverContinuous, to: target, withName: "forever_continuous_plan_name")
+    transaction.add(plan: namedForeverContinuous, to: target, withName: "forever_continuous_plan_name")
     
     scheduler.commit(transaction: transaction)
     
@@ -49,10 +49,8 @@ class PlanTests: XCTestCase {
   
   func testAddAndRemoveNamedPlan() {
     transaction.add(plan: immediatelyEndingPlan, to: target, withName: "common_name")
-    transaction.add(plan: foreverContinuous, to: target, withName: "forever_continuous_plan_name")
+    transaction.add(plan: namedForeverContinuous, to: target, withName: "forever_continuous_plan_name")
     transaction.removePlan(named: "forever_continuous_plan_name", from: target)
-    
-    XCTAssertTrue(target.text! == "")
     
     scheduler.commit(transaction: transaction)
     
@@ -72,14 +70,14 @@ class PlanTests: XCTestCase {
   }
   
   func testNamedPlansOverwiteOneAnother() {
-    transaction.add(plan: foreverContinuous, to: target, withName: "common_name")
-    transaction.add(plan: targetAlteringPlan, to: target, withName: "common_name")
+    transaction.add(plan: namedForeverContinuous, to: incrementerTarget, withName: "common_name")
+    transaction.add(plan: targetAlteringPlan, to: incrementerTarget, withName: "common_name")
     
     XCTAssertTrue(target.text! == "")
     
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(target.text! == "delegatedadded")
+    XCTAssertTrue(incrementerTarget.counter == 1)
   }
   
   func testNamedPlansMakeAddCallbacks() {
@@ -154,7 +152,8 @@ class IncrementerTargetPlan: NSObject, Plan {
     return IncrementerTargetPlan()
   }
   
-  private class Performer: NSObject, NamedPlanPerforming {
+  private class Performer: NSObject, ContinuousPerforming, NamedPlanPerforming {
+    var token:IsActiveTokenable!
     let target: Any
     required init(target: Any) {
       self.target = target
@@ -170,6 +169,41 @@ class IncrementerTargetPlan: NSObject, Plan {
       if let unwrappedTarget = self.target as? IncrementerTarget {
         unwrappedTarget.counter = unwrappedTarget.counter - 1
       }
+    }
+    
+    func set(isActiveTokenGenerator: IsActiveTokenGenerating) {
+      token = isActiveTokenGenerator.generate()
+    }
+  }
+}
+
+class NamedForeverContinuous: NSObject, Plan {
+  
+  func performerClass() -> AnyClass {
+    return Performer.self
+  }
+  
+  public func copy(with zone: NSZone? = nil) -> Any {
+    return NamedForeverContinuous()
+  }
+  
+  private class Performer: NSObject, ContinuousPerforming, NamedPlanPerforming {
+    var token:IsActiveTokenable!
+    let target: Any
+    required init(target: Any) {
+      self.target = target
+    }
+    
+    func removePlan(named name: String) {
+      token.terminate()
+    }
+    
+    func addPlan(plan: Plan, named name: String) {
+      
+    }
+    
+    func set(isActiveTokenGenerator: IsActiveTokenGenerating) {
+      token = isActiveTokenGenerator.generate()
     }
   }
 }
