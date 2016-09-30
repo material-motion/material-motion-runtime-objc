@@ -17,6 +17,7 @@
 #import <Foundation/Foundation.h>
 
 @protocol MDMPlan;
+@protocol MDMNamedPlan;
 
 /**
  The MDMTransaction class acts as a register of operations that may be committed to an instance of
@@ -41,16 +42,16 @@ NS_SWIFT_NAME(Transaction)
  Associates a named plan with a given target.
  
  @param plan The plan to add to this transaction.
- @param target The target on which the plan can operate.
  @param name String identifier for the plan.
+ @param target The target on which the plan can operate.
  */
-- (void)addPlan:(nonnull id<MDMPlan>)plan
-       toTarget:(nonnull id)target
+- (void)addPlan:(nonnull id<MDMNamedPlan>)plan
           named:(nonnull NSString *)name
-  NS_SWIFT_NAME(add(plan:to:withName:));
+       toTarget:(nonnull id)target
+  NS_SWIFT_NAME(addPlan(_:named:to:));
 
 /**
- Removes any plan associated with given name on the given target.
+ Removes any plan associated with the given name on the given target.
  
  @param name String identifier for the plan.
  @param target The target on which the plan can operate.

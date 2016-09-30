@@ -23,9 +23,7 @@ class PlanTests: XCTestCase {
   var incrementerTarget:IncrementerTarget!
   var scheduler:Scheduler!
   var transaction:Transaction!
-  var immediatelyEndingPlan:Plan!
-  var namedForeverContinuous:Plan!
-  var targetAlteringPlan:Plan!
+  var firstViewTargetAlteringPlan:NamedPlan!
   
   override func setUp() {
     super.setUp()
@@ -33,116 +31,158 @@ class PlanTests: XCTestCase {
     incrementerTarget = IncrementerTarget()
     scheduler = Scheduler()
     transaction = Transaction()
-    immediatelyEndingPlan = Emit(plan: InstantlyContinuous())
-    namedForeverContinuous = NamedForeverContinuous()
-    targetAlteringPlan = TargetAltering()
+    firstViewTargetAlteringPlan = ViewTargetAltering()
     target.text = ""
   }
   
   func testAddingNamedPlan() {
-    transaction.add(plan: namedForeverContinuous, to: target, withName: "forever_continuous_plan_name")
+    transaction.addPlan(firstViewTargetAlteringPlan, named: "common_name", to: target)
     
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(scheduler.activityState == .active)
+    XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvoked")
   }
   
   func testAddAndRemoveNamedPlan() {
-    transaction.add(plan: immediatelyEndingPlan, to: target, withName: "common_name")
-    transaction.add(plan: namedForeverContinuous, to: target, withName: "forever_continuous_plan_name")
-    transaction.removePlan(named: "forever_continuous_plan_name", from: target)
+    transaction.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: target)
+    transaction.removePlan(named: "name_two", from: target)
     
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(scheduler.activityState == .idle)
+    XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvoked")
   }
   
   func testRemoveNamedPlanThatIsntThere() {
-    transaction.add(plan: targetAlteringPlan, to: target, withName: "target_altering_plan")
+    transaction.addPlan(firstViewTargetAlteringPlan, named: "common_name", to: target)
     transaction.removePlan(named: "was_never_added_plan", from: target)
-    
-    XCTAssertTrue(target.text! == "")
     
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(target.text! == "delegatedadded")
-    XCTAssertTrue(scheduler.activityState == .idle)
+    XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvoked")
   }
   
   func testNamedPlansOverwiteOneAnother() {
-    transaction.add(plan: namedForeverContinuous, to: incrementerTarget, withName: "common_name")
-    transaction.add(plan: targetAlteringPlan, to: incrementerTarget, withName: "common_name")
-    
-    XCTAssertTrue(target.text! == "")
+    let planA = IncrementerTargetPlan()
+    let planB = IncrementerTargetPlan()
+    transaction.addPlan(planA, named: "common_name", to: incrementerTarget)
+    transaction.addPlan(planB, named: "common_name", to: incrementerTarget)
     
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(incrementerTarget.counter == 1)
+    XCTAssertTrue(incrementerTarget.addCounter == 2)
+    XCTAssertTrue(incrementerTarget.removeCounter == 2)
   }
   
-  func testNamedPlansMakeAddCallbacks() {
-    let firstPlan = TargetAltering()
-    transaction.add(plan: firstPlan, to: target, withName: "one_name")
-    transaction.add(plan: firstPlan, to: target, withName: "two_name")
-    
-    XCTAssertTrue(target.text! == "")
+  func testNamedPlansMakeAddAndRemoveCallbacks() {
+    let plan = ViewTargetAltering()
+    transaction.addPlan(plan, named: "one_name", to: target)
+    transaction.addPlan(plan, named: "two_name", to: target)
     
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(target.text! == "delegatedaddedadded")
+    XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvokedremovePlanInvokedaddPlanInvoked")
   }
   
   func testAddingTheSameNamedPlanTwiceToTheSameTarget() {
-    let firstPlan = IncrementerTargetPlan()
-    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "one")
-    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "one")
+    let plan = IncrementerTargetPlan()
+    transaction.addPlan(plan, named: "one", to: incrementerTarget)
+    transaction.addPlan(plan, named: "one", to: incrementerTarget)
     
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(incrementerTarget.counter == 1)
+    XCTAssertTrue(incrementerTarget.addCounter == 2)
+    XCTAssertTrue(incrementerTarget.removeCounter == 2)
   }
 
   func testAddingTheSamePlanWithSimilarNamesToTheSameTarget() {
     let firstPlan = IncrementerTargetPlan()
-    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "one")
-    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "One")
-    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "1")
-    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "ONE")
+    transaction.addPlan(firstPlan, named: "one", to: incrementerTarget)
+    transaction.addPlan(firstPlan, named: "One", to: incrementerTarget)
+    transaction.addPlan(firstPlan, named: "1", to: incrementerTarget)
+    transaction.addPlan(firstPlan, named: "ONE", to: incrementerTarget)
     
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(incrementerTarget.counter == 4)
-  }
-  
-  func testAddingTheSamePlanWithDifferentNamesToTheSameTarget() {
-    let firstPlan = IncrementerTargetPlan()
-    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "one")
-    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "two")
-    
-    scheduler.commit(transaction: transaction)
-    
-    XCTAssertTrue(incrementerTarget.counter == 2)
+    XCTAssertTrue(incrementerTarget.addCounter == 4)
+    XCTAssertTrue(incrementerTarget.removeCounter == 4)
   }
   
   func testAddingTheSameNamedPlanToDifferentTargets() {
     let firstPlan = IncrementerTargetPlan()
     let secondIncrementerTarget = IncrementerTarget()
-    transaction.add(plan: firstPlan, to: incrementerTarget, withName: "one")
-    transaction.add(plan: firstPlan, to: secondIncrementerTarget, withName: "one")
+    transaction.addPlan(firstPlan, named: "one", to: incrementerTarget)
+    transaction.addPlan(firstPlan, named: "one", to: secondIncrementerTarget)
     
     scheduler.commit(transaction: transaction)
     
-    XCTAssertTrue(incrementerTarget.counter == 1)
-    XCTAssertTrue(secondIncrementerTarget.counter == 1)
+    XCTAssertTrue(incrementerTarget.addCounter == 1)
+    XCTAssertTrue(incrementerTarget.removeCounter == 1)
+    XCTAssertTrue(secondIncrementerTarget.addCounter == 1)
+    XCTAssertTrue(secondIncrementerTarget.removeCounter == 1)
   }
- 
+  
+  func testNamedPlanOnlyInvokesNamedCallbacks() {
+    let plan = ViewTargetAltering()
+    transaction.addPlan(plan, named: "one_name", to: target)
+    
+    scheduler.commit(transaction: transaction)
+    
+    XCTAssertTrue(target.text!.range(of: "addInvoked") == nil)
+  }
+  
+  func testPlanOnlyInvokesPlanCallbacks() {
+    let plan = RegularPlanTargetAlteringPlan()
+    transaction.add(plan: plan, to: target)
+    
+    scheduler.commit(transaction: transaction)
+    
+    XCTAssertTrue(target.text!.range(of: "addPlanInvoked") == nil)
+    XCTAssertTrue(target.text!.range(of: "removePlanInvoked") == nil)
+  }
 }
 
 class IncrementerTarget: NSObject {
-  var counter = 0
+  var addCounter = 0
+  var removeCounter = 0
 }
 
-class IncrementerTargetPlan: NSObject, Plan {
+class RegularPlanTargetAlteringPlan: NSObject, Plan {
+
+  func performerClass() -> AnyClass {
+    return Performer.self
+  }
+  
+  public func copy(with zone: NSZone? = nil) -> Any {
+    return RegularPlanTargetAlteringPlan()
+  }
+  
+  private class Performer: NSObject, NamedPlanPerforming, PlanPerforming {
+    let target: Any
+    required init(target: Any) {
+      self.target = target
+    }
+    
+    func add(plan: Plan) {
+      if let unwrappedTarget = self.target as? UITextView {
+        unwrappedTarget.text = unwrappedTarget.text + "addInvoked"
+      }
+    }
+    
+    func addPlan(_ plan: NamedPlan, named name: String) {
+      if let unwrappedTarget = self.target as? UITextView {
+        unwrappedTarget.text = unwrappedTarget.text + "addPlanInvoked"
+      }
+    }
+    
+    func removePlan(named name: String) {
+      if let unwrappedTarget = self.target as? UITextView {
+        unwrappedTarget.text = unwrappedTarget.text + "removePlanInvoked"
+      }
+    }
+  }
+}
+
+class IncrementerTargetPlan: NSObject, NamedPlan {
   
   func performerClass() -> AnyClass {
     return Performer.self
@@ -152,103 +192,58 @@ class IncrementerTargetPlan: NSObject, Plan {
     return IncrementerTargetPlan()
   }
   
-  private class Performer: NSObject, ContinuousPerforming, NamedPlanPerforming {
-    var token:IsActiveTokenable!
+  private class Performer: NSObject, NamedPlanPerforming {
     let target: Any
     required init(target: Any) {
       self.target = target
     }
     
-    func addPlan(plan: Plan, named name: String) {
+    func addPlan(_ plan: NamedPlan, named name: String) {
       if let unwrappedTarget = self.target as? IncrementerTarget {
-        unwrappedTarget.counter = unwrappedTarget.counter + 1
+        unwrappedTarget.addCounter = unwrappedTarget.addCounter + 1
       }
     }
     
     func removePlan(named name: String) {
       if let unwrappedTarget = self.target as? IncrementerTarget {
-        unwrappedTarget.counter = unwrappedTarget.counter - 1
+        unwrappedTarget.removeCounter = unwrappedTarget.removeCounter + 1
       }
-    }
-    
-    func set(isActiveTokenGenerator: IsActiveTokenGenerating) {
-      token = isActiveTokenGenerator.generate()
     }
   }
 }
 
-class NamedForeverContinuous: NSObject, Plan {
+class ViewTargetAltering: NSObject, NamedPlan {
   
   func performerClass() -> AnyClass {
     return Performer.self
   }
   
   public func copy(with zone: NSZone? = nil) -> Any {
-    return NamedForeverContinuous()
+    return ViewTargetAltering()
   }
   
-  private class Performer: NSObject, ContinuousPerforming, NamedPlanPerforming {
-    var token:IsActiveTokenable!
+  private class Performer: NSObject, NamedPlanPerforming, PlanPerforming {
     let target: Any
     required init(target: Any) {
       self.target = target
     }
     
-    func removePlan(named name: String) {
-      token.terminate()
-    }
-    
-    func addPlan(plan: Plan, named name: String) {
-      
-    }
-    
-    func set(isActiveTokenGenerator: IsActiveTokenGenerating) {
-      token = isActiveTokenGenerator.generate()
-    }
-  }
-}
-
-class TargetAltering: NSObject, Plan {
-  
-  func performerClass() -> AnyClass {
-    return Performer.self
-  }
-  
-  public func copy(with zone: NSZone? = nil) -> Any {
-    return TargetAltering()
-  }
-  
-  private class Performer: NSObject, ContinuousPerforming, NamedPlanPerforming {
-    let target: Any
-    required init(target: Any) {
-      self.target = target
-    }
-
-    func addPlan(plan: Plan, named name: String) {
+    func add(plan: Plan) {
       if let unwrappedTarget = self.target as? UITextView {
-        unwrappedTarget.text = unwrappedTarget.text + "added"
+        unwrappedTarget.text = unwrappedTarget.text + "addInvoked"
+      }
+    }
+
+    func addPlan(_ plan: NamedPlan, named name: String) {
+      if let unwrappedTarget = self.target as? UITextView {
+        unwrappedTarget.text = unwrappedTarget.text + "addPlanInvoked"
       }
     }
     
     func removePlan(named name: String) {
       if let unwrappedTarget = self.target as? UITextView {
-        unwrappedTarget.text = unwrappedTarget.text + "removed"
+        unwrappedTarget.text = unwrappedTarget.text + "removePlanInvoked"
       }
-    }
-    
-    func set(isActiveTokenGenerator: IsActiveTokenGenerating) {
-      if let unwrappedTarget = self.target as? UITextView {
-        unwrappedTarget.text = "delegated"
-      }
-    }
-    
-    func setDelegatedPerformance(willStart: @escaping DelegatedPerformanceTokenReturnBlock,
-                                 didEnd: @escaping DelegatedPerformanceTokenArgBlock) {
-      let token = willStart()!
-      if let unwrappedTarget = self.target as? UITextView {
-        unwrappedTarget.text = "delegated"
-      }
-      didEnd(token)
     }
   }
 }

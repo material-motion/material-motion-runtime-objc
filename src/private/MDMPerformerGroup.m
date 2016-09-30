@@ -68,22 +68,18 @@
     if (isNew) {
       [trace.createdPerformers addObject:performer];
     }
-
-    if ([performer respondsToSelector:@selector(addPlan:)]) {
-      [(id<MDMPlanPerforming>)performer addPlan:plan];
-    }
     
-    // MDMNamedPlanPerforming callbacks
-    if (log.name.length) {
+    if (log.name.length > 0) {
+      id<MDMNamedPlan> namedPlan = (id<MDMNamedPlan>)plan;
       if (log.isRemoval) {
         if ([performer respondsToSelector:@selector(removePlanNamed:)]) {
           [(id<MDMNamedPlanPerforming>)performer removePlanNamed:log.name];
         }
-      } else {
-        if ([performer respondsToSelector:@selector(addPlan:named:)]) {
-          [(id<MDMNamedPlanPerforming>)performer addPlan:plan named:log.name];
-        }
+      } else if ([performer respondsToSelector:@selector(addPlan:named:)]) {
+        [(id<MDMNamedPlanPerforming>)performer addPlan:namedPlan named:log.name];
       }
+    } else if ([performer respondsToSelector:@selector(addPlan:)]) {
+      [(id<MDMPlanPerforming>)performer addPlan:plan];
     }
   }
 }
