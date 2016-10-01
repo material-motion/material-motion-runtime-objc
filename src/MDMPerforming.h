@@ -54,6 +54,30 @@ NS_SWIFT_NAME(PlanPerforming)
 
 @end
 
+/** Specifics for a named plan performer to allow named plans to be added and removed. */
+NS_SWIFT_NAME(NamedPlanPerforming)
+@protocol MDMNamedPlanPerforming <MDMPerforming>
+
+/**
+ Provides the performer with a plan and an associated name.
+ 
+ @param plan The plan that required this type of performer.
+ @param name The name by which the plan can be identified.
+ */
+- (void)addPlan:(nonnull id<MDMNamedPlan>)plan
+          named:(nonnull NSString *)name
+    NS_SWIFT_NAME(addPlan(_:named:));
+
+/**
+ Removes a named plan from a performer.
+ 
+ @param name The name by which the plan can be identified.
+ */
+- (void)removePlanNamed:(nonnull NSString *)name
+    NS_SWIFT_NAME(removePlan(named:));
+
+@end
+
 #pragma mark - Continuous performing
 
 @protocol MDMIsActiveTokenGenerating;
@@ -125,13 +149,29 @@ NS_SWIFT_NAME(IsActiveTokenGenerating)
 
 #pragma mark - Composition
 
+/**
+ A plan emitter allows an object to emit new plans to a backing scheduler for the target to which
+ the performer is associated.
+ */
+NS_SWIFT_NAME(PlanEmitting)
+@protocol MDMPlanEmitting <NSObject>
+
+/** Emit a new plan. The plan will immediately be added to the backing scheduler. */
+- (void)emitPlan:(nonnull NSObject<MDMPlan> *)plan
+    NS_SWIFT_NAME(emitPlan(_:));
+
+@end
+
+// clang-format off
 /** A transaction emitter allows a performer to commit new plans to a scheduler. */
+__deprecated_msg("Use PlanEmitting instead.")
 NS_SWIFT_NAME(TransactionEmitting)
 @protocol MDMTransactionEmitting <NSObject>
 
 /** Emit a new transaction. The transaction will immediately be committed to the scheduler. */
 - (void)emitTransaction:(nonnull MDMTransaction*)transaction
-    NS_SWIFT_NAME(emit(transaction:));
+    NS_SWIFT_NAME(emit(transaction:))
+    __deprecated_msg("Use PlanEmitting instead.");
 
 @end
 
@@ -143,77 +183,18 @@ NS_SWIFT_NAME(ComposablePerforming)
 
 #pragma mark Composable performing
 
-/** The performer will be provided with a method for initiating a new transaction. */
-- (void)setTransactionEmitter:(nonnull id<MDMTransactionEmitting>)transactionEmitter
-    NS_SWIFT_NAME(set(transactionEmitter:));
+@optional // TODO: Make required after next release.
 
-@end
-
-/** Specifics for a named plan performer to allow named plans to be added and removed. */
-NS_SWIFT_NAME(NamedPlanPerforming)
-@protocol MDMNamedPlanPerforming <MDMPerforming>
-
-/**
- Provides the performer with a plan and an associated name.
-
- @param plan The plan that required this type of performer.
- @param name The name by which the plan can be identified.
- */
-- (void)addPlan:(nonnull id<MDMNamedPlan>)plan
-          named:(nonnull NSString *)name
-  NS_SWIFT_NAME(addPlan(_:named:));
-
-/**
- Removes a named plan from a performer.
-
- @param name The name by which the plan can be identified.
- */
-- (void)removePlanNamed:(nonnull NSString *)name
-  NS_SWIFT_NAME(removePlan(named:));
-
-@end
-
-#pragma mark - Deprecated APIs
-
-// clang-format off
-/**
- An object conforming to MDMDelegatedPerformingToken represents a single unit of delegated
- performance.
- */
-NS_SWIFT_NAME(DelegatedPerformingToken)
-__deprecated_msg("Use MDMIsActiveToken instead.")
-@protocol MDMDelegatedPerformingToken<NSObject>@end
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-/** A block that returns a delegated performance token. */
-NS_SWIFT_NAME(DelegatedPerformanceTokenReturnBlock) typedef _Nullable id<MDMDelegatedPerformingToken> (^MDMDelegatedPerformanceTokenReturnBlock)(void);
-
-/** A block that accepts a delegated performance token. */
-NS_SWIFT_NAME(DelegatedPerformanceTokenArgBlock)
-typedef void (^MDMDelegatedPerformanceTokenArgBlock)(_Nonnull id<MDMDelegatedPerformingToken>);
-
-#pragma clang diagnostic pop
-
-/**
- A class conforming to MDMDelegatedPerforming is expected to delegate execution to an external system.
- */
-NS_SWIFT_NAME(DelegatedPerforming)
-__deprecated_msg("Use MDMContinuousPerforming instead.")
-@protocol MDMDelegatedPerforming<MDMPerforming>
+/** The performer is provided a plan emitter shortly after initialization. */
+- (void)setPlanEmitter:(nonnull id<MDMPlanEmitting>)planEmitter
+    NS_SWIFT_NAME(setPlanEmitter(_:));
 
 @optional
 
-#pragma mark Delegating performing
-
-/**
- The performer will be provided with two methods for indicating the current activity state of the
- performer.
- */
-- (void)setDelegatedPerformanceWillStart:(nonnull MDMDelegatedPerformanceTokenReturnBlock)willStart
-                                  didEnd:(nonnull MDMDelegatedPerformanceTokenArgBlock)didEnd
-NS_SWIFT_NAME(setDelegatedPerformance(willStart:didEnd:));
+/** The performer will be provided with a method for initiating a new transaction. */
+- (void)setTransactionEmitter:(nonnull id<MDMTransactionEmitting>)transactionEmitter
+    NS_SWIFT_NAME(set(transactionEmitter:))
+__deprecated_msg("Use setPlanEmitter instead.");
 
 @end
     // clang-format on

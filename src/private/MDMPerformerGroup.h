@@ -22,6 +22,7 @@
 @class MDMTransactionLog;
 @protocol MDMIsActiveTokenable;
 @protocol MDMPerformerGroupDelegate;
+@protocol MDMPlan;
 
 /** An entity responsible for managing the performers associated with a given target. */
 @interface MDMPerformerGroup : NSObject
@@ -36,11 +37,13 @@
 // nil by default. Useful for view duplication.
 @property(nonatomic, nullable) id schedulerTarget;
 
-- (void)executeLog:(nonnull MDMTransactionLog *)log trace:(nonnull MDMTrace *)trace;
+- (void)addPlan:(nonnull id<MDMPlan>)plan trace:(nonnull MDMTrace *)trace;
 
 - (void)registerIsActiveToken:(nonnull id<MDMIsActiveTokenable>)token
             withPerformerInfo:(nonnull MDMPerformerInfo *)performerInfo;
 - (void)terminateIsActiveToken:(nonnull id<MDMIsActiveTokenable>)token
              withPerformerInfo:(nonnull MDMPerformerInfo *)performerInfo;
+
+- (void)executeLog:(nonnull MDMTransactionLog *)log trace:(nonnull MDMTrace *)trace __deprecated_msg("Use addPlan instead.");
 
 @end

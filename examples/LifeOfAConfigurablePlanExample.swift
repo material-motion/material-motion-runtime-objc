@@ -45,11 +45,7 @@ class LifeOfAConfigurablePlanViewController: UIViewController {
     let panGestureRecognizer = UIPanGestureRecognizer()
     view.addGestureRecognizer(panGestureRecognizer)
 
-    let plan = Draggable(panGestureRecognizer: panGestureRecognizer)
-
-    let transaction = Transaction()
-    transaction.add(plan: plan, to: squareView)
-    scheduler.commit(transaction: transaction)
+    scheduler.addPlan(Draggable(panGestureRecognizer: panGestureRecognizer), to: squareView)
   }
 
   // MARK: Routing initializers

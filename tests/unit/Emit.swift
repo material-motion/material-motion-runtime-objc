@@ -23,6 +23,7 @@ class Emit: NSObject, Plan {
     self.plan = plan
   }
 
+  @available(iOS, deprecated)
   func performerClass() -> AnyClass {
     return Performer.self
   }
@@ -31,6 +32,7 @@ class Emit: NSObject, Plan {
     return Emit(plan: plan)
   }
 
+  @available(iOS, deprecated)
   private class Performer: NSObject, PlanPerforming, ComposablePerforming {
     let target: Any
     required init(target: Any) {
@@ -39,14 +41,21 @@ class Emit: NSObject, Plan {
 
     func add(plan: Plan) {
       let emit = plan as! Emit
+      emitter.emitPlan(emit.plan)
+
       let transaction = Transaction()
       transaction.add(plan: emit.plan, to: target)
-      emitter.emit(transaction: transaction)
+      transactionEmit.emit(transaction: transaction)
     }
 
-    var emitter: TransactionEmitting!
+    var transactionEmit: TransactionEmitting!
     func set(transactionEmitter: TransactionEmitting) {
-      emitter = transactionEmitter
+      transactionEmit = transactionEmitter
+    }
+
+    var emitter: PlanEmitting!
+    func setPlanEmitter(_ planEmitter: PlanEmitting) {
+      emitter = planEmitter
     }
   }
 }

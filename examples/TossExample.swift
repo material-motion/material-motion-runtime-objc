@@ -42,14 +42,10 @@ class TossViewController: UIViewController {
     let pan = UIPanGestureRecognizer()
     view.addGestureRecognizer(pan)
 
-    let transaction = Transaction()
-
     // Notice that our view controller is only concerned with one plan: Tossable. This plan's
     // performer will coordinate the emission of plans in reaction to the gesture recognizer's
     // events.
-    transaction.add(plan: Tossable(gestureRecognizer: pan), to: square)
-
-    scheduler.commit(transaction: transaction)
+    scheduler.addPlan(Tossable(gestureRecognizer: pan), to: square)
   }
 
   // MARK: Routing initializers
@@ -96,37 +92,31 @@ private class Tossable: NSObject, Plan {
     func add(plan: Plan) {
       let tossable = plan as! Tossable
 
-      let transaction = Transaction()
       // Draggable is being reused from the Life of a Configurable Plan example.
-      transaction.add(plan: Draggable(panGestureRecognizer: tossable.gestureRecognizer), to: target)
-      emitter.emit(transaction: transaction)
+      emitter.emitPlan(Draggable(panGestureRecognizer: tossable.gestureRecognizer))
 
       tossable.gestureRecognizer.addTarget(self, action: #selector(didPan(gesture:)))
     }
 
     func didPan(gesture: UIPanGestureRecognizer) {
-      let transaction = Transaction()
-
       switch gesture.state {
       case .began:
-        transaction.add(plan: Grabbed(), to: target)
+        emitter.emitPlan(Grabbed())
 
       case .ended: fallthrough
       case .cancelled:
         let midpoint = CGPoint(x: target.superview!.bounds.midX,
                                y: target.superview!.bounds.midY)
-        transaction.add(plan: Anchored(to: midpoint), to: target)
-        transaction.add(plan: Impulse(velocity: gesture.velocity(in: target)), to: target)
+        emitter.emitPlan(Anchored(to: midpoint))
+        emitter.emitPlan(Impulse(velocity: gesture.velocity(in: target)))
 
       default: ()
       }
-
-      emitter.emit(transaction: transaction)
     }
 
-    var emitter: TransactionEmitting!
-    func set(transactionEmitter: TransactionEmitting) {
-      emitter = transactionEmitter
+    var emitter: PlanEmitting!
+    func setPlanEmitter(_ planEmitter: PlanEmitting) {
+      emitter = planEmitter
     }
   }
 }

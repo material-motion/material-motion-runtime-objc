@@ -18,6 +18,8 @@
 
 @class MDMScheduler;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 /** The object provided to performers when they conform to MDMTransactionEmitting. */
 @interface MDMTransactionEmitter : NSObject <MDMTransactionEmitting>
 
@@ -28,3 +30,4 @@
 - (nonnull instancetype)init NS_UNAVAILABLE;
 
 @end
+#pragma clang diagnostic pop

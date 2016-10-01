@@ -19,10 +19,12 @@
 @protocol MDMPlan;
 @protocol MDMNamedPlan;
 
+// clang-format off
 /**
  The MDMTransaction class acts as a register of operations that may be committed to an instance of
  MDMScheduler.
  */
+__deprecated_msg("Add plans directly to a scheduler instead.")
 NS_SWIFT_NAME(Transaction)
 @interface MDMTransaction : NSObject
 
@@ -36,7 +38,8 @@ NS_SWIFT_NAME(Transaction)
 */
 - (void)addPlan:(nonnull id<MDMPlan>)plan
        toTarget:(nonnull id)target
-  NS_SWIFT_NAME(add(plan:to:));
+  NS_SWIFT_NAME(add(plan:to:))
+  __deprecated_msg("Add plans directly to a scheduler instead.");
 
 /**
  Associates a named plan with a given target.
@@ -48,7 +51,8 @@ NS_SWIFT_NAME(Transaction)
 - (void)addPlan:(nonnull id<MDMNamedPlan>)plan
           named:(nonnull NSString *)name
        toTarget:(nonnull id)target
-  NS_SWIFT_NAME(addPlan(_:named:to:));
+  NS_SWIFT_NAME(addPlan(_:named:to:))
+  __deprecated_msg("Add plans directly to a scheduler instead.");
 
 /**
  Removes any plan associated with the given name on the given target.
@@ -58,6 +62,8 @@ NS_SWIFT_NAME(Transaction)
  */
 - (void)removePlanNamed:(nonnull NSString *)name
              fromTarget:(nonnull id)target
-  NS_SWIFT_NAME(removePlan(named:from:));
+  NS_SWIFT_NAME(removePlan(named:from:))
+  __deprecated_msg("Remove plans directly from a scheduler instead.");
 
 @end
+    // clang-format on

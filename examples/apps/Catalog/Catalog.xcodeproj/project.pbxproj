@@ -20,8 +20,7 @@
 		669F4A321D86013A00B0C45C /* LifeOfAConfigurablePlanExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 669F4A311D86013A00B0C45C /* LifeOfAConfigurablePlanExample.swift */; };
 		669F4A341D86073A00B0C45C /* TableOfContents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 669F4A331D86073A00B0C45C /* TableOfContents.swift */; };
 		669F4A3C1D860F1E00B0C45C /* TossExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 669F4A3A1D860F1E00B0C45C /* TossExample.swift */; };
-		66EF8FB21D91AEFF003F063C /* DelegationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66EF8FB01D91AEFF003F063C /* DelegationTests.swift */; };
-		66EF8FB31D91AEFF003F063C /* NoopDelegation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66EF8FB11D91AEFF003F063C /* NoopDelegation.swift */; };
+		66EF8FBB1D9F27DF003F063C /* SchedulerTransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66EF8FBA1D9F27DF003F063C /* SchedulerTransactionTests.swift */; };
 		66F0320F1D8336C70094B9C9 /* SchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F0320E1D8336C70094B9C9 /* SchedulerTests.swift */; };
 		66F032111D8349200094B9C9 /* InstantlyContinuous.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F032101D8349200094B9C9 /* InstantlyContinuous.swift */; };
 		66F032151D8349560094B9C9 /* Emit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F032141D8349560094B9C9 /* Emit.swift */; };
@@ -63,8 +62,7 @@
 		669F4A311D86013A00B0C45C /* LifeOfAConfigurablePlanExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LifeOfAConfigurablePlanExample.swift; sourceTree = "<group>"; };
 		669F4A331D86073A00B0C45C /* TableOfContents.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TableOfContents.swift; path = ../../TableOfContents.swift; sourceTree = "<group>"; };
 		669F4A3A1D860F1E00B0C45C /* TossExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TossExample.swift; sourceTree = "<group>"; };
-		66EF8FB01D91AEFF003F063C /* DelegationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DelegationTests.swift; sourceTree = "<group>"; };
-		66EF8FB11D91AEFF003F063C /* NoopDelegation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoopDelegation.swift; sourceTree = "<group>"; };
+		66EF8FBA1D9F27DF003F063C /* SchedulerTransactionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SchedulerTransactionTests.swift; sourceTree = "<group>"; };
 		66F0320E1D8336C70094B9C9 /* SchedulerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SchedulerTests.swift; sourceTree = "<group>"; };
 		66F032101D8349200094B9C9 /* InstantlyContinuous.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InstantlyContinuous.swift; sourceTree = "<group>"; };
 		66F032141D8349560094B9C9 /* Emit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Emit.swift; sourceTree = "<group>"; };
@@ -103,9 +101,10 @@
 		66251F1B1D360C87006EBC89 /* unit */ = {
 			isa = PBXGroup;
 			children = (
+				66F0320E1D8336C70094B9C9 /* SchedulerTests.swift */,
+				66EF8FBA1D9F27DF003F063C /* SchedulerTransactionTests.swift */,
 				661369701D5BE7CB00F6830F /* CompositionTests.swift */,
 				6624C6421D466D7C00DF3108 /* ContinuousPerformingTests.swift */,
-				66EF8FB01D91AEFF003F063C /* DelegationTests.swift */,
 				66F032131D8349440094B9C9 /* Helpers */,
 				66F032121D8349370094B9C9 /* Plans */,
 				410B812A1D9B32280009D06D /* PlanTests.swift */,
@@ -173,7 +172,6 @@
 		66F032121D8349370094B9C9 /* Plans */ = {
 			isa = PBXGroup;
 			children = (
-				66EF8FB11D91AEFF003F063C /* NoopDelegation.swift */,
 				66F032141D8349560094B9C9 /* Emit.swift */,
 				66F032101D8349200094B9C9 /* InstantlyContinuous.swift */,
 				668C9AFF1D91AA6600CB10EE /* ForeverContinuous.swift */,
@@ -412,6 +410,7 @@
 			files = (
 				6625A5531D467EBD00FD10F7 /* TestSchedulerDelegate.swift in Sources */,
 				668C9B001D91AA6600CB10EE /* ForeverContinuous.swift in Sources */,
+				66EF8FBB1D9F27DF003F063C /* SchedulerTransactionTests.swift in Sources */,
 				66F0320F1D8336C70094B9C9 /* SchedulerTests.swift in Sources */,
 				661369711D5BE7CB00F6830F /* CompositionTests.swift in Sources */,
 				414B511F1D9B35FD004C7988 /* PlanTests.swift in Sources */,
@@ -419,7 +418,6 @@
 				6624C6431D466D7C00DF3108 /* ContinuousPerformingTests.swift in Sources */,
 				66F032151D8349560094B9C9 /* Emit.swift in Sources */,
 				66F032111D8349200094B9C9 /* InstantlyContinuous.swift in Sources */,
-				66EF8FB21D91AEFF003F063C /* DelegationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

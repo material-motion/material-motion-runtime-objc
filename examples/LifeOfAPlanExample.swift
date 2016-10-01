@@ -41,11 +41,8 @@ class LifeOfAPlanViewController: UIViewController {
     squareView.backgroundColor = .red
     view.addSubview(squareView)
 
-    // We commit a Draggable instance to the scheduler in order to associate the Draggable plan with
-    // our view.
-    let transaction = Transaction()
-    transaction.add(plan: Draggable(), to: squareView)
-    scheduler.commit(transaction: transaction)
+    // Associate a Draggable plan with squareView.
+    scheduler.addPlan(Draggable(), to: squareView)
   }
 
   // MARK: Routing initializers

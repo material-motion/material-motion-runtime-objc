@@ -21,20 +21,11 @@
 #import "MDMPerformerInfo.h"
 #import "MDMPerforming.h"
 #import "MDMPlan.h"
+#import "MDMPlanEmitter.h"
 #import "MDMScheduler.h"
 #import "MDMTrace.h"
 #import "MDMTransaction+Private.h"
 #import "MDMTransactionEmitter.h"
-
-// TODO: Remove upon deletion of deprecation delegation APIs.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-@interface MDMDelegatedPerformanceToken : NSObject <MDMDelegatedPerformingToken>
-@end
-#pragma clang diagnostic pop
-
-@implementation MDMDelegatedPerformanceToken
-@end
 
 @interface MDMPerformerGroup ()
 @property(nonatomic, weak) MDMScheduler *scheduler;
@@ -58,40 +49,8 @@
   return self;
 }
 
-- (void)executeLog:(MDMTransactionLog *)log trace:(MDMTrace *)trace {
-  NSMutableArray *logs = [NSMutableArray array];
-  // check to see if we're adding a new named plan.
-  if (log.name.length > 0 && !log.isRemoval) {
-    // if we are, we need to add a named removal plan prior to it
-    [logs addObject:[[MDMTransactionLog alloc] initWithPlans:log.plans target:log.target name:log.name removal:TRUE]];
-  }
-  [logs addObject:log];
-  
-  for (MDMTransactionLog *transactionLog in logs) {
-    [trace.committedPlans addObjectsFromArray:transactionLog.plans];
-    
-    for (id<MDMPlan> plan in transactionLog.plans) {
-      BOOL isNew = NO;
-      id<MDMPerforming> performer = [self performerForPlan:plan isNew:&isNew];
-      
-      if (isNew) {
-        [trace.createdPerformers addObject:performer];
-      }
-      
-      if (transactionLog.name.length > 0) {
-        id<MDMNamedPlan> namedPlan = (id<MDMNamedPlan>)plan;
-        if (transactionLog.isRemoval) {
-          if ([performer respondsToSelector:@selector(removePlanNamed:)]) {
-            [(id<MDMNamedPlanPerforming>)performer removePlanNamed:transactionLog.name];
-          }
-        } else if ([performer respondsToSelector:@selector(addPlan:named:)]) {
-          [(id<MDMNamedPlanPerforming>)performer addPlan:namedPlan named:transactionLog.name];
-        }
-      } else if ([performer respondsToSelector:@selector(addPlan:)]) {
-        [(id<MDMPlanPerforming>)performer addPlan:plan];
-      }
-    }
-  }
+- (void)addPlan:(id<MDMPlan>)plan trace:(MDMTrace *)trace {
+  [self addPlan:plan trace:trace log:nil];
 }
 
 - (void)registerIsActiveToken:(id<MDMIsActiveTokenable>)token
@@ -115,6 +74,30 @@
 }
 
 #pragma mark - Private
+
+- (void)addPlan:(id<MDMPlan>)plan trace:(MDMTrace *)trace log:(MDMTransactionLog *)log {
+  [trace.committedPlans addObject:plan];
+  
+  BOOL isNew = NO;
+  id<MDMPerforming> performer = [self performerForPlan:plan isNew:&isNew];
+  
+  if (isNew) {
+    [trace.createdPerformers addObject:performer];
+  }
+  
+  if (log != nil && log.name.length > 0) {
+   id<MDMNamedPlan> namedPlan = (id<MDMNamedPlan>)plan;
+   if (log.isRemoval) {
+     if ([performer respondsToSelector:@selector(removePlanNamed:)]) {
+       [(id<MDMNamedPlanPerforming>)performer removePlanNamed:log.name];
+     }
+    } else if ([performer respondsToSelector:@selector(addPlan:named:)]) {
+      [(id<MDMNamedPlanPerforming>)performer addPlan:namedPlan named:log.name];
+    }
+  } else if ([performer respondsToSelector:@selector(addPlan:)]) {
+    [(id<MDMPlanPerforming>)performer addPlan:plan];
+  }
+}
 
 - (id<MDMPerforming>)performerForPlan:(id<MDMPlan>)plan isNew:(BOOL *)isNew {
   Class performerClass = [plan performerClass];
@@ -144,13 +127,22 @@
   id<MDMPerforming> performer = performerInfo.performer;
 
   // Composable performance
+  if ([performer respondsToSelector:@selector(setPlanEmitter:)]) {
+    id<MDMComposablePerforming> composablePerformer = (id<MDMComposablePerforming>)performer;
 
+    MDMPlanEmitter *emitter = [[MDMPlanEmitter alloc] initWithScheduler:self.scheduler target:self.target];
+    [composablePerformer setPlanEmitter:emitter];
+  }
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   if ([performer respondsToSelector:@selector(setTransactionEmitter:)]) {
     id<MDMComposablePerforming> composablePerformer = (id<MDMComposablePerforming>)performer;
 
     MDMTransactionEmitter *emitter = [[MDMTransactionEmitter alloc] initWithScheduler:self.scheduler];
     [composablePerformer setTransactionEmitter:emitter];
   }
+#pragma clang diagnostic pop
 
   // Is-active performance
 
@@ -160,56 +152,6 @@
     MDMIsActiveTokenGenerator *generator = [[MDMIsActiveTokenGenerator alloc] initWithPerformerGroup:self
                                                                                        performerInfo:performerInfo];
     [continuousPerformer setIsActiveTokenGenerator:generator];
-  }
-
-  // Delegated performance
-  // TODO: Remove upon deletion of deprecation delegation APIs.
-
-  if ([performer respondsToSelector:@selector(setDelegatedPerformanceWillStart:didEnd:)]) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    id<MDMDelegatedPerforming> delegatedPerformer = (id<MDMDelegatedPerforming>)performer;
-
-    __weak MDMPerformerInfo *weakInfo = performerInfo;
-    __weak MDMPerformerGroup *weakSelf = self;
-    MDMDelegatedPerformanceTokenReturnBlock willStartBlock = ^(void) {
-      MDMPerformerInfo *strongInfo = weakInfo;
-      MDMPerformerGroup *strongSelf = weakSelf;
-      if (!strongInfo || !strongSelf || !strongSelf->_scheduler) {
-        return (id<MDMDelegatedPerformingToken>)nil;
-      }
-
-      // Register the work
-
-      MDMDelegatedPerformanceToken *token = [MDMDelegatedPerformanceToken new];
-      [strongInfo.delegatedPerformanceTokens addObject:token];
-
-      // Check our group's activity state
-
-      // TODO(featherless): If/when we explore multi-threaded schedulers we need to more cleanly
-      // propagate activity state up to the Scheduler. As it stands, this code is not thread-safe.
-
-      [self didRegisterTokenForPerformerInfo:performerInfo];
-
-      return (id<MDMDelegatedPerformingToken>)token;
-    };
-
-    MDMDelegatedPerformanceTokenArgBlock didEndBlock = ^(id<MDMDelegatedPerformingToken> token) {
-      MDMPerformerInfo *strongInfo = weakInfo;
-      MDMPerformerGroup *strongSelf = weakSelf;
-      if (!strongInfo || !strongSelf || !strongSelf->_scheduler) {
-        return;
-      }
-
-      NSAssert([strongInfo.delegatedPerformanceTokens containsObject:token],
-               @"Token is not active. May have already been terminated by a previous invocation.");
-      [strongInfo.delegatedPerformanceTokens removeObject:token];
-
-      [strongSelf didTerminateTokenForPerformerInfo:strongInfo];
-    };
-
-    [delegatedPerformer setDelegatedPerformanceWillStart:willStartBlock didEnd:didEndBlock];
-#pragma clang diagnostic pop
   }
 }
 
@@ -229,6 +171,23 @@
 
     if (self.activePerformers.count == 0) {
       [self.delegate performerGroup:self activeStateDidChange:NO];
+    }
+  }
+}
+
+#pragma mark - Deprecated
+
+- (void)executeLog:(MDMTransactionLog *)log trace:(MDMTrace *)trace {
+  NSMutableArray *logs = [NSMutableArray array];
+  // check to see if we're adding a new named plan.
+  if (log.name.length > 0 && !log.isRemoval) {
+    // if we are, we need to add a named removal plan prior to it
+    [logs addObject:[[MDMTransactionLog alloc] initWithPlans:log.plans target:log.target name:log.name removal:TRUE]];
+  }
+  [logs addObject:log];
+  for (MDMTransactionLog *transactionLog in logs) {
+    for (id<MDMPlan> plan in transactionLog.plans) {
+      [self addPlan:plan trace:trace log:transactionLog];
     }
   }
 }

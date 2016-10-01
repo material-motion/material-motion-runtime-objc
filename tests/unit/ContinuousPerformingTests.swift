@@ -26,9 +26,7 @@ class ContinuousPerformingTests: XCTestCase {
     let delegate = TestSchedulerDelegate()
     scheduler.delegate = delegate
 
-    let transaction = Transaction()
-    transaction.add(plan: InstantlyContinuous(), to: NSObject())
-    scheduler.commit(transaction: transaction)
+    scheduler.addPlan(InstantlyContinuous(), to: NSObject())
 
     XCTAssertTrue(delegate.activityStateDidChange)
     XCTAssertTrue(scheduler.activityState == .idle)
@@ -40,9 +38,7 @@ class ContinuousPerformingTests: XCTestCase {
     let delegate = TestSchedulerDelegate()
     scheduler.delegate = delegate
 
-    let transaction = Transaction()
-    transaction.add(plan: ForeverContinuous(), to: NSObject())
-    scheduler.commit(transaction: transaction)
+    scheduler.addPlan(ForeverContinuous(), to: NSObject())
 
     XCTAssertTrue(delegate.activityStateDidChange)
     XCTAssertTrue(scheduler.activityState == .active)

@@ -31,9 +31,7 @@ class CompositionTests: XCTestCase {
     let delegate = TestSchedulerDelegate()
     scheduler.delegate = delegate
 
-    let transaction = Transaction()
-    transaction.add(plan: Emit(plan: InstantlyContinuous()), to: NSObject())
-    scheduler.commit(transaction: transaction)
+    scheduler.addPlan(Emit(plan: InstantlyContinuous()), to: NSObject())
 
     // The following steps are now expected to have occurred:
     //

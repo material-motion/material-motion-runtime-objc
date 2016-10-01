@@ -83,6 +83,31 @@
   return (self.activePerformerGroups.count > 0) ? MDMSchedulerActivityStateActive : MDMSchedulerActivityStateIdle;
 }
 
+- (void)addPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target {
+  MDMTrace *trace = [MDMTrace new];
+  [[self performerGroupForTarget:target] addPlan:[plan copy] trace:trace];
+  if ([trace.committedPlans count]) {
+    MDMSchedulerPlansCommittedTracePayload *payload = [MDMSchedulerPlansCommittedTracePayload new];
+    payload.committedPlans = [trace.committedPlans copy];
+
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc postNotificationName:MDMTraceNotificationNamePlansCommitted
+                      object:self
+                    userInfo:@{MDMTraceNotificationPayloadKey : payload}];
+  }
+  if ([trace.createdPerformers count]) {
+    MDMSchedulerPerformersCreatedTracePayload *event = [MDMSchedulerPerformersCreatedTracePayload new];
+    event.createdPerformers = [trace.createdPerformers copy];
+
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc postNotificationName:MDMTraceNotificationNamePerformersCreated
+                      object:self
+                    userInfo:@{MDMTraceNotificationPayloadKey : event}];
+  }
+}
+
+#pragma mark - Deprecated
+
 - (void)commitTransaction:(MDMTransaction *)transaction {
   MDMTrace *trace = [MDMTrace new];
 

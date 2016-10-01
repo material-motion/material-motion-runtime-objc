@@ -14,24 +14,16 @@
  limitations under the License.
  */
 
-import XCTest
-import MaterialMotionRuntime
+#import "MDMPerforming.h"
 
-// Tests related to performer delegation.
-@available(iOS, deprecated)
-class DelegationTests: XCTestCase {
+@class MDMScheduler;
 
-  func testDelegationPerformerCausesActivityStateChange() {
-    let scheduler = Scheduler()
+@interface MDMPlanEmitter : NSObject <MDMPlanEmitting>
 
-    let delegate = TestSchedulerDelegate()
-    scheduler.delegate = delegate
+/** Initialize a newly allocated emitter with the provided scheduler and target. */
+- (nonnull instancetype)initWithScheduler:(nonnull MDMScheduler *)scheduler target:(nonnull id)target;
 
-    let transaction = Transaction()
-    transaction.add(plan: NoopDelegation(), to: NSObject())
-    scheduler.commit(transaction: transaction)
+/** Use initWithScheduler:target: instead. */
+- (nonnull instancetype)init NS_UNAVAILABLE;
 
-    XCTAssertTrue(delegate.activityStateDidChange)
-    XCTAssertTrue(scheduler.activityState == .idle)
-  }
-}
+@end
