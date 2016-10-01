@@ -89,7 +89,6 @@
 
 - (void)addPlan:(NSObject<MDMPlan> *)plan named:(NSString *)name toTarget:(id)target {
   NSParameterAssert(name.length > 0);
-  [self commonAddPlan:plan toTarget:target log:[[MDMTransactionLog alloc] initWithPlans:@[plan] target:target name:name removal:TRUE]];
   [self commonAddPlan:plan toTarget:target log:[[MDMTransactionLog alloc] initWithPlans:@[plan] target:target name:name removal:FALSE]];
 }
 

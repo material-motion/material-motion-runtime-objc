@@ -175,13 +175,13 @@ class SchedulerTests: XCTestCase {
     XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvoked")
   }
   
-  func testAddAndRemoveNamedPlan() {
+  func testAddAndRemoveTheSameNamedPlan() {
     let scheduler = Scheduler()
     
     scheduler.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: target)
-    scheduler.removePlan(named: "name_two", from: target)
+    scheduler.removePlan(named: "name_one", from: target)
     
-    XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvoked")
+    XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvokedremovePlanInvoked")
   }
   
   func testRemoveNamedPlanThatIsntThere() {
@@ -263,6 +263,21 @@ class SchedulerTests: XCTestCase {
     
     XCTAssertTrue(target.text!.range(of: "addPlanInvoked") == nil)
     XCTAssertTrue(target.text!.range(of: "removePlanInvoked") == nil)
+  }
+  
+  func testNamedPlansReusePerformers() {
+    let scheduler = Scheduler()
+    var numberOfCreatedPerformers = 0
+    expectation(forNotification: TraceNotificationName.performersCreated._rawValue as String, object: scheduler) { notification -> Bool in
+      let event = notification.userInfo![TraceNotificationPayloadKey] as! SchedulerPerformersCreatedTracePayload
+      numberOfCreatedPerformers = numberOfCreatedPerformers + event.createdPerformers.count
+      return numberOfCreatedPerformers == 1
+    }
+    
+    scheduler.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: target)
+    scheduler.removePlan(named: "name_one", from: target)
+    
+    waitForExpectations(timeout: 0.1)
   }
 
   // A plan that enables hijacking of the delegated performance token blocks.
