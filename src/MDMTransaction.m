@@ -37,20 +37,16 @@
 
 - (void)addPlan:(NSObject<MDMPlan> *)plan named:(NSString *)name toTarget:(id)target {
   NSParameterAssert(name.length > 0);
-  [self commonRemovePlan:plan fromTarget:target named:name];
   [self commonAddPlan:plan toTarget:target withName:name];
 }
 
 - (void)removePlanNamed:(nonnull NSString *)name fromTarget:(nonnull id)target {
-  [self commonRemovePlan:nil fromTarget:target named:name];
+  NSParameterAssert(name.length > 0);
+  [_logs addObject:[[MDMTransactionLog alloc] initWithTarget:target name:name]];
 }
 
 - (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target withName:(NSString *)name {
-  [_logs addObject:[[MDMTransactionLog alloc] initWithPlan:[plan copy] target:target name:name removal:FALSE]];
-}
-
-- (void)commonRemovePlan:(NSObject<MDMPlan> *)plan fromTarget:(nonnull id)target named:(NSString *)named {
-  [_logs addObject:[[MDMTransactionLog alloc] initWithPlan:plan target:target name:named removal:TRUE]];
+  [_logs addObject:[[MDMTransactionLog alloc] initWithPlans:@[plan] target:target name:name removal:FALSE]];
 }
 
 - (NSArray<MDMTransactionLog *> *)logs {
@@ -61,15 +57,23 @@
 
 @implementation MDMTransactionLog
 
-- (instancetype)initWithPlan:(NSObject<MDMPlan> *)plan target:(id)target name:(NSString *)name removal:(BOOL)removal {
+- (instancetype)initWithPlans:(NSArray<NSObject<MDMPlan> *> *)plans target:(id)target name:(NSString *)name removal:(BOOL)removal {
   self = [super init];
   if (self) {
-    if (plan != nil) {
-      _plans = @[ plan ];
-    }
+    _plans = [[NSArray alloc] initWithArray:plans copyItems:TRUE];
     _target = target;
     _name = [name copy];
     _removal = removal;
+  }
+  return self;
+}
+
+- (instancetype)initWithTarget:(id)target name:(NSString *)name {
+  self = [super init];
+  if (self) {
+    _target = target;
+    _name = [name copy];
+    _removal = true;
   }
   return self;
 }

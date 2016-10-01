@@ -59,27 +59,37 @@
 }
 
 - (void)executeLog:(MDMTransactionLog *)log trace:(MDMTrace *)trace {
-  [trace.committedPlans addObjectsFromArray:log.plans];
-
-  for (id<MDMPlan> plan in log.plans) {
-    BOOL isNew = NO;
-    id<MDMPerforming> performer = [self performerForPlan:plan isNew:&isNew];
-
-    if (isNew) {
-      [trace.createdPerformers addObject:performer];
-    }
+  NSMutableArray *logs = [NSMutableArray array];
+  // check to see if we're adding a new named plan.
+  if (log.name.length > 0 && !log.isRemoval) {
+    // if we are, we need to add a named removal plan prior to it
+    [logs addObject:[[MDMTransactionLog alloc] initWithPlans:log.plans target:log.target name:log.name removal:TRUE]];
+  }
+  [logs addObject:log];
+  
+  for (MDMTransactionLog *transactionLog in logs) {
+    [trace.committedPlans addObjectsFromArray:transactionLog.plans];
     
-    if (log.name.length > 0) {
-      id<MDMNamedPlan> namedPlan = (id<MDMNamedPlan>)plan;
-      if (log.isRemoval) {
-        if ([performer respondsToSelector:@selector(removePlanNamed:)]) {
-          [(id<MDMNamedPlanPerforming>)performer removePlanNamed:log.name];
-        }
-      } else if ([performer respondsToSelector:@selector(addPlan:named:)]) {
-        [(id<MDMNamedPlanPerforming>)performer addPlan:namedPlan named:log.name];
+    for (id<MDMPlan> plan in transactionLog.plans) {
+      BOOL isNew = NO;
+      id<MDMPerforming> performer = [self performerForPlan:plan isNew:&isNew];
+      
+      if (isNew) {
+        [trace.createdPerformers addObject:performer];
       }
-    } else if ([performer respondsToSelector:@selector(addPlan:)]) {
-      [(id<MDMPlanPerforming>)performer addPlan:plan];
+      
+      if (transactionLog.name.length > 0) {
+        id<MDMNamedPlan> namedPlan = (id<MDMNamedPlan>)plan;
+        if (transactionLog.isRemoval) {
+          if ([performer respondsToSelector:@selector(removePlanNamed:)]) {
+            [(id<MDMNamedPlanPerforming>)performer removePlanNamed:transactionLog.name];
+          }
+        } else if ([performer respondsToSelector:@selector(addPlan:named:)]) {
+          [(id<MDMNamedPlanPerforming>)performer addPlan:namedPlan named:transactionLog.name];
+        }
+      } else if ([performer respondsToSelector:@selector(addPlan:)]) {
+        [(id<MDMPlanPerforming>)performer addPlan:plan];
+      }
     }
   }
 }

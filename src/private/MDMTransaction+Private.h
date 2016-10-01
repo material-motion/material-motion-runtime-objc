@@ -25,7 +25,9 @@
 @property(nonatomic, copy) NSString *name;
 @property(nonatomic, assign, readonly, getter=isRemoval) BOOL removal;
 
-- (instancetype)initWithPlan:(NSObject<MDMPlan> *)plan target:(id)target name:(NSString *)name removal:(BOOL)removal;
+- (instancetype)initWithPlans:(NSArray<NSObject<MDMPlan> *> *)plan target:(id)target name:(NSString *)name removal:(BOOL)removal;
+
+- (instancetype)initWithTarget:(id)target name:(NSString *)name;
 
 @end
 
