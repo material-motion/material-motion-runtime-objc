@@ -18,7 +18,19 @@ import XCTest
 import MaterialMotionRuntime
 
 class SchedulerTests: XCTestCase {
-
+  
+  var target:UITextView!
+  private var incrementerTarget:IncrementerTarget!
+  var firstViewTargetAlteringPlan:NamedPlan!
+  
+  override func setUp() {
+    super.setUp()
+    target = UITextView()
+    incrementerTarget = IncrementerTarget()
+    firstViewTargetAlteringPlan = ViewTargetAltering()
+    target.text = ""
+  }
+  
   // Verify that a plan committed to a scheduler is copied.
   func testPlansAreCopied() {
     let state = State()
@@ -123,7 +135,7 @@ class SchedulerTests: XCTestCase {
     waitForExpectations(timeout: 0.1)
   }
 
-  // Verify that order of plans is respected in a transaction.
+  // Verify that order of plans is respected in a scheduler.
   func testTwoPlansOrderIsRespected() {
     let state = State()
     state.boolean = false
@@ -153,6 +165,104 @@ class SchedulerTests: XCTestCase {
     scheduler = nil
 
     XCTAssertNil(plan.state.tokenGenerator!.generate())
+  }
+  
+  func testAddingNamedPlan() {
+    let scheduler = Scheduler()
+    
+    scheduler.addPlan(firstViewTargetAlteringPlan, named: "common_name", to: target)
+    
+    XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvoked")
+  }
+  
+  func testAddAndRemoveNamedPlan() {
+    let scheduler = Scheduler()
+    
+    scheduler.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: target)
+    scheduler.removePlan(named: "name_two", from: target)
+    
+    XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvoked")
+  }
+  
+  func testRemoveNamedPlanThatIsntThere() {
+    let scheduler = Scheduler()
+    
+    scheduler.addPlan(firstViewTargetAlteringPlan, named: "common_name", to: target)
+    scheduler.removePlan(named: "was_never_added_plan", from: target)
+    
+    XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvoked")
+  }
+  
+  func testNamedPlansOverwiteOneAnother() {
+    let scheduler = Scheduler()
+    let planA = IncrementerTargetPlan()
+    let planB = IncrementerTargetPlan()
+    scheduler.addPlan(planA, named: "common_name", to: incrementerTarget)
+    scheduler.addPlan(planB, named: "common_name", to: incrementerTarget)
+    
+    XCTAssertTrue(incrementerTarget.addCounter == 2)
+    XCTAssertTrue(incrementerTarget.removeCounter == 2)
+  }
+  
+  func testNamedPlansMakeAddAndRemoveCallbacks() {
+    let scheduler = Scheduler()
+    let plan = ViewTargetAltering()
+    scheduler.addPlan(plan, named: "one_name", to: target)
+    scheduler.addPlan(plan, named: "two_name", to: target)
+    
+    XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvokedremovePlanInvokedaddPlanInvoked")
+  }
+  
+  func testAddingTheSameNamedPlanTwiceToTheSameTarget() {
+    let scheduler = Scheduler()
+    let plan = IncrementerTargetPlan()
+    scheduler.addPlan(plan, named: "one", to: incrementerTarget)
+    scheduler.addPlan(plan, named: "one", to: incrementerTarget)
+    
+    XCTAssertTrue(incrementerTarget.addCounter == 2)
+    XCTAssertTrue(incrementerTarget.removeCounter == 2)
+  }
+  
+  func testAddingTheSamePlanWithSimilarNamesToTheSameTarget() {
+    let scheduler = Scheduler()
+    let firstPlan = IncrementerTargetPlan()
+    scheduler.addPlan(firstPlan, named: "one", to: incrementerTarget)
+    scheduler.addPlan(firstPlan, named: "One", to: incrementerTarget)
+    scheduler.addPlan(firstPlan, named: "1", to: incrementerTarget)
+    scheduler.addPlan(firstPlan, named: "ONE", to: incrementerTarget)
+    
+    XCTAssertTrue(incrementerTarget.addCounter == 4)
+    XCTAssertTrue(incrementerTarget.removeCounter == 4)
+  }
+  
+  func testAddingTheSameNamedPlanToDifferentTargets() {
+    let scheduler = Scheduler()
+    let firstPlan = IncrementerTargetPlan()
+    let secondIncrementerTarget = IncrementerTarget()
+    scheduler.addPlan(firstPlan, named: "one", to: incrementerTarget)
+    scheduler.addPlan(firstPlan, named: "one", to: secondIncrementerTarget)
+    
+    XCTAssertTrue(incrementerTarget.addCounter == 1)
+    XCTAssertTrue(incrementerTarget.removeCounter == 1)
+    XCTAssertTrue(secondIncrementerTarget.addCounter == 1)
+    XCTAssertTrue(secondIncrementerTarget.removeCounter == 1)
+  }
+  
+  func testNamedPlanOnlyInvokesNamedCallbacks() {
+    let scheduler = Scheduler()
+    let plan = ViewTargetAltering()
+    scheduler.addPlan(plan, named: "one_name", to: target)
+    
+    XCTAssertTrue(target.text!.range(of: "addInvoked") == nil)
+  }
+  
+  func testPlanOnlyInvokesPlanCallbacks() {
+    let scheduler = Scheduler()
+    let plan = RegularPlanTargetAlteringPlan()
+    scheduler.addPlan(plan, to: target)
+    
+    XCTAssertTrue(target.text!.range(of: "addPlanInvoked") == nil)
+    XCTAssertTrue(target.text!.range(of: "removePlanInvoked") == nil)
   }
 
   // A plan that enables hijacking of the delegated performance token blocks.
@@ -189,6 +299,113 @@ class SchedulerTests: XCTestCase {
       var tokenGenerator: IsActiveTokenGenerating!
       func set(isActiveTokenGenerator: IsActiveTokenGenerating) {
         tokenGenerator = isActiveTokenGenerator
+      }
+    }
+  }
+  
+  private class IncrementerTarget: NSObject {
+    var addCounter = 0
+    var removeCounter = 0
+  }
+  
+  private class RegularPlanTargetAlteringPlan: NSObject, Plan {
+    
+    func performerClass() -> AnyClass {
+      return Performer.self
+    }
+    
+    public func copy(with zone: NSZone? = nil) -> Any {
+      return RegularPlanTargetAlteringPlan()
+    }
+    
+    private class Performer: NSObject, NamedPlanPerforming, PlanPerforming {
+      let target: Any
+      required init(target: Any) {
+        self.target = target
+      }
+      
+      func add(plan: Plan) {
+        if let unwrappedTarget = self.target as? UITextView {
+          unwrappedTarget.text = unwrappedTarget.text + "addInvoked"
+        }
+      }
+      
+      func addPlan(_ plan: NamedPlan, named name: String) {
+        if let unwrappedTarget = self.target as? UITextView {
+          unwrappedTarget.text = unwrappedTarget.text + "addPlanInvoked"
+        }
+      }
+      
+      func removePlan(named name: String) {
+        if let unwrappedTarget = self.target as? UITextView {
+          unwrappedTarget.text = unwrappedTarget.text + "removePlanInvoked"
+        }
+      }
+    }
+  }
+  
+  private class IncrementerTargetPlan: NSObject, NamedPlan {
+    
+    func performerClass() -> AnyClass {
+      return Performer.self
+    }
+    
+    public func copy(with zone: NSZone? = nil) -> Any {
+      return IncrementerTargetPlan()
+    }
+    
+    private class Performer: NSObject, NamedPlanPerforming {
+      let target: Any
+      required init(target: Any) {
+        self.target = target
+      }
+      
+      func addPlan(_ plan: NamedPlan, named name: String) {
+        if let unwrappedTarget = self.target as? IncrementerTarget {
+          unwrappedTarget.addCounter = unwrappedTarget.addCounter + 1
+        }
+      }
+      
+      func removePlan(named name: String) {
+        if let unwrappedTarget = self.target as? IncrementerTarget {
+          unwrappedTarget.removeCounter = unwrappedTarget.removeCounter + 1
+        }
+      }
+    }
+  }
+  
+  private class ViewTargetAltering: NSObject, NamedPlan {
+    
+    func performerClass() -> AnyClass {
+      return Performer.self
+    }
+    
+    public func copy(with zone: NSZone? = nil) -> Any {
+      return ViewTargetAltering()
+    }
+    
+    private class Performer: NSObject, NamedPlanPerforming, PlanPerforming {
+      let target: Any
+      required init(target: Any) {
+        self.target = target
+      }
+      
+      func add(plan: Plan) {
+        if let unwrappedTarget = self.target as? UITextView {
+          unwrappedTarget.text = unwrappedTarget.text + "addInvoked"
+        }
+      }
+      
+      func addPlan(_ plan: NamedPlan, named name: String) {
+        if let unwrappedTarget = self.target as? UITextView {
+          unwrappedTarget.text = unwrappedTarget.text + "addPlanInvoked"
+        }
+      }
+      
+      func removePlan(named name: String) {
+        if let unwrappedTarget = self.target as? UITextView {
+          unwrappedTarget.text = unwrappedTarget.text + "removePlanInvoked"
+        }
       }
     }
   }

@@ -84,12 +84,29 @@
 }
 
 - (void)addPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target {
+  [self commonAddPlan:plan toTarget:target log:nil];
+}
+
+- (void)addPlan:(NSObject<MDMPlan> *)plan named:(NSString *)name toTarget:(id)target {
+  NSParameterAssert(name.length > 0);
+  [self commonAddPlan:plan toTarget:target log:[[MDMTransactionLog alloc] initWithPlans:@[plan] target:target name:name removal:TRUE]];
+  [self commonAddPlan:plan toTarget:target log:[[MDMTransactionLog alloc] initWithPlans:@[plan] target:target name:name removal:FALSE]];
+}
+
+- (void)removePlanNamed:(NSString *)name fromTarget:(id)target {
+  NSParameterAssert(name.length > 0);
+  [self commonAddPlan:nil toTarget:target log:[[MDMTransactionLog alloc] initWithTarget:target name:name]];
+}
+
+#pragma mark - Private
+
+- (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target log:(MDMTransactionLog *)log {
   MDMTrace *trace = [MDMTrace new];
-  [[self performerGroupForTarget:target] addPlan:[plan copy] trace:trace];
+  [[self performerGroupForTarget:target] addPlan:[plan copy] trace:trace log:log];
   if ([trace.committedPlans count]) {
     MDMSchedulerPlansCommittedTracePayload *payload = [MDMSchedulerPlansCommittedTracePayload new];
     payload.committedPlans = [trace.committedPlans copy];
-
+    
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc postNotificationName:MDMTraceNotificationNamePlansCommitted
                       object:self
@@ -98,7 +115,7 @@
   if ([trace.createdPerformers count]) {
     MDMSchedulerPerformersCreatedTracePayload *event = [MDMSchedulerPerformersCreatedTracePayload new];
     event.createdPerformers = [trace.createdPerformers copy];
-
+    
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc postNotificationName:MDMTraceNotificationNamePerformersCreated
                       object:self

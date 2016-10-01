@@ -41,29 +41,5 @@ NS_SWIFT_NAME(Transaction)
   NS_SWIFT_NAME(add(plan:to:))
   __deprecated_msg("Add plans directly to a scheduler instead.");
 
-/**
- Associates a named plan with a given target.
- 
- @param plan The plan to add to this transaction.
- @param name String identifier for the plan.
- @param target The target on which the plan can operate.
- */
-- (void)addPlan:(nonnull id<MDMNamedPlan>)plan
-          named:(nonnull NSString *)name
-       toTarget:(nonnull id)target
-  NS_SWIFT_NAME(addPlan(_:named:to:))
-  __deprecated_msg("Add plans directly to a scheduler instead.");
-
-/**
- Removes any plan associated with the given name on the given target.
- 
- @param name String identifier for the plan.
- @param target The target on which the plan can operate.
- */
-- (void)removePlanNamed:(nonnull NSString *)name
-             fromTarget:(nonnull id)target
-  NS_SWIFT_NAME(removePlan(named:from:))
-  __deprecated_msg("Remove plans directly from a scheduler instead.");
-
 @end
     // clang-format on

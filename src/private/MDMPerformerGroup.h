@@ -37,7 +37,7 @@
 // nil by default. Useful for view duplication.
 @property(nonatomic, nullable) id schedulerTarget;
 
-- (void)addPlan:(nonnull id<MDMPlan>)plan trace:(nonnull MDMTrace *)trace;
+- (void)addPlan:(nonnull id<MDMPlan>)plan trace:(nonnull MDMTrace *)trace log:(nullable MDMTransactionLog *)log;
 
 - (void)registerIsActiveToken:(nonnull id<MDMIsActiveTokenable>)token
             withPerformerInfo:(nonnull MDMPerformerInfo *)performerInfo;

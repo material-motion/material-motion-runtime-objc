@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		414B511F1D9B35FD004C7988 /* PlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 410B812A1D9B32280009D06D /* PlanTests.swift */; };
 		661369711D5BE7CB00F6830F /* CompositionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 661369701D5BE7CB00F6830F /* CompositionTests.swift */; };
 		6624C6431D466D7C00DF3108 /* ContinuousPerformingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6624C6421D466D7C00DF3108 /* ContinuousPerformingTests.swift */; };
 		6625A5531D467EBD00FD10F7 /* TestSchedulerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6625A5521D467EBD00FD10F7 /* TestSchedulerDelegate.swift */; };
@@ -42,7 +41,6 @@
 		13CF38FD9735AB012AE6022C /* Pods-MaterialMotionRuntime-Catalog.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MaterialMotionRuntime-Catalog.release.xcconfig"; path = "../../../Pods/Target Support Files/Pods-MaterialMotionRuntime-Catalog/Pods-MaterialMotionRuntime-Catalog.release.xcconfig"; sourceTree = "<group>"; };
 		1B22D9EF52369A0C9852CF13 /* Pods_MaterialMotionRuntime_UnitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MaterialMotionRuntime_UnitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		38D4C84E8232BC0806D71419 /* Pods-MaterialMotionRuntime-UnitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MaterialMotionRuntime-UnitTests.debug.xcconfig"; path = "../../../Pods/Target Support Files/Pods-MaterialMotionRuntime-UnitTests/Pods-MaterialMotionRuntime-UnitTests.debug.xcconfig"; sourceTree = "<group>"; };
-		410B812A1D9B32280009D06D /* PlanTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlanTests.swift; sourceTree = "<group>"; };
 		41272F462040EB12DEA1F059 /* Pods-MaterialMotionRuntime-UnitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MaterialMotionRuntime-UnitTests.release.xcconfig"; path = "../../../Pods/Target Support Files/Pods-MaterialMotionRuntime-UnitTests/Pods-MaterialMotionRuntime-UnitTests.release.xcconfig"; sourceTree = "<group>"; };
 		6554CEC6A4F8D7CC1752C457 /* Pods-MaterialMotionRuntime-Catalog.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MaterialMotionRuntime-Catalog.debug.xcconfig"; path = "../../../Pods/Target Support Files/Pods-MaterialMotionRuntime-Catalog/Pods-MaterialMotionRuntime-Catalog.debug.xcconfig"; sourceTree = "<group>"; };
 		661369701D5BE7CB00F6830F /* CompositionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompositionTests.swift; sourceTree = "<group>"; };
@@ -101,13 +99,11 @@
 		66251F1B1D360C87006EBC89 /* unit */ = {
 			isa = PBXGroup;
 			children = (
-				66F0320E1D8336C70094B9C9 /* SchedulerTests.swift */,
 				66EF8FBA1D9F27DF003F063C /* SchedulerTransactionTests.swift */,
 				661369701D5BE7CB00F6830F /* CompositionTests.swift */,
 				6624C6421D466D7C00DF3108 /* ContinuousPerformingTests.swift */,
 				66F032131D8349440094B9C9 /* Helpers */,
 				66F032121D8349370094B9C9 /* Plans */,
-				410B812A1D9B32280009D06D /* PlanTests.swift */,
 				66F0320E1D8336C70094B9C9 /* SchedulerTests.swift */,
 				6625A5511D467D1C00FD10F7 /* UnitTests-Bridging-Header.h */,
 			);
@@ -413,8 +409,6 @@
 				66EF8FBB1D9F27DF003F063C /* SchedulerTransactionTests.swift in Sources */,
 				66F0320F1D8336C70094B9C9 /* SchedulerTests.swift in Sources */,
 				661369711D5BE7CB00F6830F /* CompositionTests.swift in Sources */,
-				414B511F1D9B35FD004C7988 /* PlanTests.swift in Sources */,
-				66EF8FB31D91AEFF003F063C /* NoopDelegation.swift in Sources */,
 				6624C6431D466D7C00DF3108 /* ContinuousPerformingTests.swift in Sources */,
 				66F032151D8349560094B9C9 /* Emit.swift in Sources */,
 				66F032111D8349200094B9C9 /* InstantlyContinuous.swift in Sources */,

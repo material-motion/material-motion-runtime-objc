@@ -32,21 +32,7 @@
 }
 
 - (void)addPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target {
-  [self commonAddPlan:plan toTarget:target withName:nil];
-}
-
-- (void)addPlan:(NSObject<MDMPlan> *)plan named:(NSString *)name toTarget:(id)target {
-  NSParameterAssert(name.length > 0);
-  [self commonAddPlan:plan toTarget:target withName:name];
-}
-
-- (void)removePlanNamed:(nonnull NSString *)name fromTarget:(nonnull id)target {
-  NSParameterAssert(name.length > 0);
-  [_logs addObject:[[MDMTransactionLog alloc] initWithTarget:target name:name]];
-}
-
-- (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target withName:(NSString *)name {
-  [_logs addObject:[[MDMTransactionLog alloc] initWithPlans:@[plan] target:target name:name removal:FALSE]];
+  [_logs addObject:[[MDMTransactionLog alloc] initWithPlans:@[plan] target:target name:nil removal:FALSE]];
 }
 
 - (NSArray<MDMTransactionLog *> *)logs {
