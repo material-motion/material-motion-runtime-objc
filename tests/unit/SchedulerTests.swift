@@ -42,8 +42,8 @@ class SchedulerTests: XCTestCase {
 
     expectation(forNotification: TraceNotificationName.plansCommitted._rawValue as String, object: scheduler) { notification -> Bool in
       let event = notification.userInfo![TraceNotificationPayloadKey] as! SchedulerPlansCommittedTracePayload
-      XCTAssertNotEqual(event.committedPlans[0] as! ChangeBoolean, plan)
-      return event.committedPlans.count == 1
+      XCTAssertNotEqual(event.committedAddPlans[0] as! ChangeBoolean, plan)
+      return event.committedAddPlans.count == 1
     }
 
     scheduler.addPlan(plan, to: state)
@@ -272,6 +272,33 @@ class SchedulerTests: XCTestCase {
       let event = notification.userInfo![TraceNotificationPayloadKey] as! SchedulerPerformersCreatedTracePayload
       numberOfCreatedPerformers = numberOfCreatedPerformers + event.createdPerformers.count
       return numberOfCreatedPerformers == 1
+    }
+    
+    scheduler.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: target)
+    scheduler.removePlan(named: "name_one", from: target)
+    
+    waitForExpectations(timeout: 0.1)
+  }
+  
+  func testNamedPlansAreCommunicatedViaNSNotifications() {
+    let scheduler = Scheduler()
+    
+    expectation(forNotification: TraceNotificationName.plansCommitted._rawValue as String, object: scheduler) { notification -> Bool in
+      let event = notification.userInfo![TraceNotificationPayloadKey] as! SchedulerPlansCommittedTracePayload
+      return event.committedAddPlans.count == 1 && event.committedRemovePlans.count == 1
+    }
+    
+    scheduler.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: target)
+    
+    waitForExpectations(timeout: 0.1)
+  }
+  
+  func testNamedRemovePlansWithAddsAreNotCommunicatedViaNSNotifications() {
+    let scheduler = Scheduler()
+    
+    expectation(forNotification: TraceNotificationName.plansCommitted._rawValue as String, object: scheduler) { notification -> Bool in
+      let event = notification.userInfo![TraceNotificationPayloadKey] as! SchedulerPlansCommittedTracePayload
+      return event.committedAddPlans.count == 1 && event.committedRemovePlans.count == 1
     }
     
     scheduler.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: target)

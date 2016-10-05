@@ -84,6 +84,7 @@ NS_SWIFT_NAME(SchedulerPlansCommittedTracePayload)
 
  Order matches the transaction's order.
  */
-@property(nonatomic, copy, nonnull, readonly) NSArray<MDMPlan>* committedPlans;
+@property(nonatomic, copy, nonnull, readonly) NSArray<MDMPlan>* committedAddPlans;
+@property(nonatomic, copy, nonnull, readonly) NSArray<MDMPlan>* committedRemovePlans;
 
 @end

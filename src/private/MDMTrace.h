@@ -19,7 +19,8 @@
 @interface MDMTrace : NSObject
 
 @property(nonatomic, nonnull, readonly) NSMutableSet* createdPerformers;
-@property(nonatomic, nonnull, readonly) NSMutableArray* committedPlans;
+@property(nonatomic, nonnull, readonly) NSMutableArray* committedAddPlans;
+@property(nonatomic, nonnull, readonly) NSMutableArray* committedRemovePlans;
 
 @end
 
@@ -31,6 +32,7 @@
 
 @interface MDMSchedulerPlansCommittedTracePayload ()
 
-@property(nonatomic, copy, nonnull) NSArray<MDMPlan>* committedPlans;
+@property(nonatomic, copy, nonnull) NSArray<MDMPlan>* committedAddPlans;
+@property(nonatomic, copy, nonnull) NSArray<MDMPlan>* committedRemovePlans;
 
 @end

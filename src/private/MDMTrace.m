@@ -22,7 +22,8 @@
   self = [super init];
   if (self) {
     _createdPerformers = [NSMutableSet set];
-    _committedPlans = [NSMutableArray array];
+    _committedAddPlans = [NSMutableArray array];
+    _committedRemovePlans = [NSMutableArray array];
   }
   return self;
 }

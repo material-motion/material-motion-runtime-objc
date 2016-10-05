@@ -86,7 +86,11 @@
   id<MDMPerforming> performer = [self performerForPlan:plan trace:trace log:log];
   if (performer != nil) {
     if (plan != nil) {
-      [trace.committedPlans addObject:plan];
+      if (log.isRemoval) {
+        [trace.committedRemovePlans addObject:plan];
+      } else {
+        [trace.committedAddPlans addObject:plan];
+      }
     } else {
       // this is the case whereby we are calling removePlan:named, but don't have a MDMPlan
     }

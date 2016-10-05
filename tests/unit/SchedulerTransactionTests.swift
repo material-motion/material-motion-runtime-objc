@@ -31,8 +31,8 @@ class SchedulerTransactionTests: XCTestCase {
 
     expectation(forNotification: TraceNotificationName.plansCommitted._rawValue as String, object: scheduler) { notification -> Bool in
       let event = notification.userInfo![TraceNotificationPayloadKey] as! SchedulerPlansCommittedTracePayload
-      XCTAssertNotEqual(event.committedPlans[0] as! ChangeBoolean, plan)
-      return event.committedPlans.count == 1
+      XCTAssertNotEqual(event.committedAddPlans[0] as! ChangeBoolean, plan)
+      return event.committedAddPlans.count == 1
     }
 
     let transaction = Transaction()

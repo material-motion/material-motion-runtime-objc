@@ -102,9 +102,10 @@
 - (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target log:(MDMTransactionLog *)log {
   MDMTrace *trace = [MDMTrace new];
   [[self performerGroupForTarget:target] addPlan:[plan copy] trace:trace log:log];
-  if ([trace.committedPlans count]) {
+  if ([trace.committedAddPlans count] || [trace.committedRemovePlans count]) {
     MDMSchedulerPlansCommittedTracePayload *payload = [MDMSchedulerPlansCommittedTracePayload new];
-    payload.committedPlans = [trace.committedPlans copy];
+    payload.committedAddPlans = [trace.committedAddPlans copy];
+    payload.committedRemovePlans = [trace.committedRemovePlans copy];
     
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc postNotificationName:MDMTraceNotificationNamePlansCommitted
@@ -131,9 +132,10 @@
     [[self performerGroupForTarget:log.target] executeLog:log trace:trace];
   }
 
-  if ([trace.committedPlans count]) {
+  if ([trace.committedAddPlans count] || [trace.committedRemovePlans count]) {
     MDMSchedulerPlansCommittedTracePayload *payload = [MDMSchedulerPlansCommittedTracePayload new];
-    payload.committedPlans = [trace.committedPlans copy];
+    payload.committedAddPlans = [trace.committedAddPlans copy];
+    payload.committedRemovePlans = [trace.committedRemovePlans copy];
 
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc postNotificationName:MDMTraceNotificationNamePlansCommitted
