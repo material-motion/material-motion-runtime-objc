@@ -87,6 +87,13 @@ NS_SWIFT_NAME(addPlan(_:named:to:));
                    from:(nonnull id)target
 NS_SWIFT_NAME(removePlan(named:from:));
 
+// clang-format off
+/** Associate a plan with a given target. */
+- (void)addPlan:(nonnull NSObject<MDMPlan> *)plan toTarget:(nonnull id)target
+    __deprecated_msg("Use addPlan:to: instead.")
+    NS_SWIFT_UNAVAILABLE("Use addPlan(_:to:) instead.");
+// clang-format on
+
 #pragma mark Tracing
 
 /**

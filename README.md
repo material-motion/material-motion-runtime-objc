@@ -66,17 +66,12 @@ commands:
 The Material Motion Runtime consists of two groups of APIs: a scheduler/transaction object and a
 constellation of protocols loosely consisting of plan and performing types.
 
-#### Scheduler + Transaction
+#### Scheduler
 
 The [Scheduler](https://material-motion.github.io/material-motion-runtime-objc/Classes/MDMScheduler.html)
 object is a coordinating entity whose primary responsibility is to fulfill plans by creating
 performers. You can create many schedulers throughout the lifetime of your application. A good rule
 of thumb is to have one scheduler per interaction or transition.
-
-[Transactions](https://material-motion.github.io/material-motion-runtime-objc/Classes/MDMTransaction.html)
-are the mechanism by which plans are committed to a scheduler. Transactions allow the runtime to
-minimize the API surface area of the scheduler while providing a vessel for plans to be transported
-within.
 
 #### Plan + Performing types
 
@@ -249,7 +244,7 @@ class MyClass {
 }
 ```
 
-#### Step 2: Create plans with targets, associate them with targets and add them to the Scheduler
+#### Step 2: Associate plans with targets
 
 Code snippets:
 
@@ -262,25 +257,7 @@ Code snippets:
 ***In Swift:***
 
 ```swift
-scheduler.addPlan(<#Plan instance#>, to: <#View instance#>)
-```
-
-Plans can also be associated with names which allows them to be removed in the future.
-
-Code snippets:
-
-***In Objective-C:***
-
-```objc
-[scheduler addPlan:<#NamedPlan instance#> named:@"plan_name" toTarget:<#View instance#>];
-[scheduler removePlanNamed:@"plan_name" fromTarget:<#View instance#>];
-```
-
-***In Swift:***
-
-```swift
-scheduler.addPlan(<#NamedPlan instance#>, named:"plan_name", to: <#View instance#>)
-scheduler.removePlan(named:"plan_name", from: <#View instance#>)
+scheduler.addPlan(<#Plan instance#>, to:<#View instance#>)
 ```
 
 ### How to configure performers with plans
@@ -288,9 +265,8 @@ scheduler.removePlan(named:"plan_name", from: <#View instance#>)
 Configuring performers with plans starts by making your performer conform to
 [PlanPerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMPlanPerforming.html).
 
-PlanPerforming requires that you implement the `addPlan:` method. This method will be called on a
-performer each time a plan is committed to the scheduler that expects to be fulfilled by the
-performer.
+PlanPerforming requires that you implement the `addPlan:` method. This method will only be invoked
+with plans that require use of this performer.
 
 Code snippets:
 
@@ -347,10 +323,10 @@ func add(plan: Plan) {
 
 ### How to use composition to fulfill plans
 
-A composition performer is able to emit new transactions using an emitter object. This feature
-enables the reuse of plans and the creation of higher-order abstractions.
+A composition performer is able to emit new plans using a plan emitter. This feature enables the
+reuse of plans and the creation of higher-order abstractions.
 
-#### Step 1: Conform to ComposablePerforming and store the transaction emitter
+#### Step 1: Conform to ComposablePerforming and store the plan emitter
 
 Code snippets:
 
@@ -358,7 +334,7 @@ Code snippets:
 
 ```objc
 @interface <#Performer#> ()
-@property(nonatomic, strong) id<MDMTransactionEmitting> transactionEmitter;
+@property(nonatomic, strong) id<MDMPlanEmitting> planEmitter;
 @end
 
 @interface <#Performer#> (Composition) <MDMComposablePerforming>
@@ -366,8 +342,8 @@ Code snippets:
 
 @implementation <#Performer#> (Composition)
 
-- (void)setTransactionEmitter:(id<MDMTransactionEmitting>)transactionEmitter {
-  self.transactionEmitter = transactionEmitter;
+- (void)setPlanEmitter:(id<MDMPlanEmitting>)planEmitter {
+  self.planEmitter = planEmitter;
 }
 
 @end
@@ -379,40 +355,34 @@ Code snippets:
 // Store the emitter in your class' definition.
 class <#Performer#>: ... {
   ...
-  var emitter: TransactionEmitting!
+  var emitter: PlanEmitting!
   ...
 }
 
 extension <#Performer#>: ComposablePerforming {
-  func set(transactionEmitter: TransactionEmitting) {
-    emitter = transactionEmitter
+  var emitter: PlanEmitting!
+  func setPlanEmitter(_ planEmitter: PlanEmitting) {
+    emitter = planEmitter
   }
 }
 ```
 
-#### Step 2: Emit transactions using the emitter
+#### Step 2: Emit plans
 
-As a general practice performers should only associate plans with their target. If you find that a
-performer needs to associate plans with more than one target, you may want to consider whether a
-[director](https://material-motion.gitbooks.io/material-motion-starmap/content/specifications/directors.html)
-is a more applicable place to put this logic.
+Performers are only able to emit plans for their associated target.
 
 Code snippets:
 
 ***In Objective-C:***
 
 ```objc
-MDMTransaction *transaction = [MDMTransaction new];
-[transaction addPlan:<#(nonnull id<MDMPlan>)#> toTarget:self.target];
-[self.transactionEmitter emitTransaction:transaction];
+[self.planEmitter emitPlan:<#(nonnull id<MDMPlan>)#>];
 ```
 
 ***In Swift:***
 
 ```swift
-let transaction = Transaction()
-transaction.add(plan: <#T##Plan#>, to: target)
-emitter.emit(transaction: transaction)
+emitter.emitPlan<#T##Plan#>)
 ```
 
 ### How to indicate continuous performance
@@ -576,3 +546,4 @@ our [contributor essentials](https://material-motion.gitbooks.io/material-motion
 ## License
 
 Licensed under the Apache 2.0 license. See LICENSE for details.
+

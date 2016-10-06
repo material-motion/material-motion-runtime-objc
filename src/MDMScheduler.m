@@ -98,7 +98,7 @@
 
 - (void)commonAddPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target log:(MDMTransactionLog *)log {
   MDMTrace *trace = [MDMTrace new];
-  
+
   NSObject<MDMPlan> *copiedPlan = [plan copy];
   [[self performerGroupForTarget:target] addPlan:copiedPlan trace:trace log:log];
 
@@ -145,6 +145,10 @@
 }
 
 #pragma mark - Deprecated
+
+- (void)addPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target {
+  [self addPlan:plan to:target];
+}
 
 - (void)commitTransaction:(MDMTransaction *)transaction {
   MDMTrace *trace = [MDMTrace new];
