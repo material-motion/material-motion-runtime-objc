@@ -62,7 +62,7 @@ NS_SWIFT_NAME(Scheduler)
 @interface MDMScheduler : NSObject
 
 /** Associate a plan with a given target. */
-- (void)addPlan:(nonnull NSObject<MDMPlan> *)plan toTarget:(nonnull id)target
+- (void)addPlan:(nonnull NSObject<MDMPlan> *)plan to:(nonnull id)target
     NS_SWIFT_NAME(addPlan(_:to:));
 
 /**
@@ -74,7 +74,7 @@ NS_SWIFT_NAME(Scheduler)
  */
 - (void)addPlan:(nonnull id<MDMNamedPlan>)plan
           named:(nonnull NSString *)name
-       toTarget:(nonnull id)target
+             to:(nonnull id)target
 NS_SWIFT_NAME(addPlan(_:named:to:));
 
 /**
@@ -84,7 +84,7 @@ NS_SWIFT_NAME(addPlan(_:named:to:));
  @param target The target on which the plan can operate.
  */
 - (void)removePlanNamed:(nonnull NSString *)name
-             fromTarget:(nonnull id)target
+                   from:(nonnull id)target
 NS_SWIFT_NAME(removePlan(named:from:));
 
 #pragma mark Tracing

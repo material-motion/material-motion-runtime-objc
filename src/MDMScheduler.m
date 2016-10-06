@@ -80,16 +80,16 @@
   return (self.activePerformerGroups.count > 0) ? MDMSchedulerActivityStateActive : MDMSchedulerActivityStateIdle;
 }
 
-- (void)addPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target {
+- (void)addPlan:(NSObject<MDMPlan> *)plan to:(id)target {
   [self commonAddPlan:plan toTarget:target log:nil];
 }
 
-- (void)addPlan:(NSObject<MDMPlan> *)plan named:(NSString *)name toTarget:(id)target {
+- (void)addPlan:(NSObject<MDMPlan> *)plan named:(NSString *)name to:(id)target {
   NSParameterAssert(name.length > 0);
   [self commonAddPlan:plan toTarget:target log:[[MDMTransactionLog alloc] initWithPlans:@[plan] target:target name:name removal:FALSE]];
 }
 
-- (void)removePlanNamed:(NSString *)name fromTarget:(id)target {
+- (void)removePlanNamed:(NSString *)name from:(id)target {
   NSParameterAssert(name.length > 0);
   [self commonAddPlan:nil toTarget:target log:[[MDMTransactionLog alloc] initWithTarget:target name:name]];
 }

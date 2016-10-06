@@ -42,7 +42,7 @@
   if (!self.scheduler || !self.target) {
     return;
   }
-  [self.scheduler addPlan:plan toTarget:self.target];
+  [self.scheduler addPlan:plan to:self.target];
 }
 
 @end

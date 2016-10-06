@@ -256,7 +256,7 @@ Code snippets:
 ***In Objective-C:***
 
 ```objc
-[scheduler addPlan:<#Plan instance#> toTarget:<#View instance#>];
+[scheduler addPlan:<#Plan instance#> to:<#View instance#>];
 ```
 
 ***In Swift:***
