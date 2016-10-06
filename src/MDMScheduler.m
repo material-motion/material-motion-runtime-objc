@@ -100,7 +100,7 @@
   MDMTrace *trace = [MDMTrace new];
   
   NSObject<MDMPlan> *copiedPlan = [plan copy];
-  [[self performerGroupForTarget:target] addPlan:[plan copy] trace:trace log:log];
+  [[self performerGroupForTarget:target] addPlan:copiedPlan trace:trace log:log];
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
