@@ -19,6 +19,7 @@
 @protocol MDMSchedulerDelegate;
 @protocol MDMPlan;
 @protocol MDMNamedPlan;
+@protocol MDMTracing;
 
 /**
  The possible activity states a scheduler can be in.
@@ -66,7 +67,7 @@ NS_SWIFT_NAME(Scheduler)
 
 /**
  Associates a named plan with a given target.
- 
+
  @param plan The plan to add to this transaction.
  @param name String identifier for the plan.
  @param target The target on which the plan can operate.
@@ -78,13 +79,34 @@ NS_SWIFT_NAME(addPlan(_:named:to:));
 
 /**
  Removes any plan associated with the given name on the given target.
- 
+
  @param name String identifier for the plan.
  @param target The target on which the plan can operate.
  */
 - (void)removePlanNamed:(nonnull NSString *)name
              fromTarget:(nonnull id)target
 NS_SWIFT_NAME(removePlan(named:from:));
+
+#pragma mark Tracing
+
+/**
+ Registers a tracer with the scheduler.
+
+ The tracer will be strongly held by the scheduler.
+ */
+- (void)addTracer:(nonnull id<MDMTracing>)tracer
+    NS_SWIFT_NAME(addTracer(_:));
+
+/**
+ Removes a tracer from the scheduler.
+
+ Does nothing if the tracer is not currently associated with the scheduler.
+ */
+- (void)removeTracer:(nonnull id<MDMTracing>)tracer
+    NS_SWIFT_NAME(removeTracer(_:));
+
+/** Returns the list of registered tracers. */
+- (nonnull NSArray<id<MDMTracing>> *)tracers;
 
 #pragma mark Committing transactions
 

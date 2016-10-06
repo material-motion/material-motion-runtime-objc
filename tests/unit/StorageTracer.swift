@@ -14,8 +14,17 @@
  limitations under the License.
  */
 
-#import "MDMPerforming.h"
-#import "MDMPlan.h"
-#import "MDMScheduler.h"
-#import "MDMTracing.h"
-#import "MDMTransaction.h"
+import MaterialMotionRuntime
+
+class StorageTracer: NSObject, Tracing {
+  var addedPlans: [Plan] = []
+  var createdPerformers: [Performing] = []
+
+  func didAddPlan(_ plan: Plan, to target: Any) {
+    addedPlans.append(plan)
+  }
+
+  func didCreatePerformer(_ performer: Performing, for target: Any) {
+    createdPerformers.append(performer)
+  }
+}

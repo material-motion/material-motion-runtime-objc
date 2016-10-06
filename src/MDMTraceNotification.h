@@ -19,6 +19,8 @@
 @protocol MDMPerforming;
 @protocol MDMPlan;
 
+// clang-format off
+
 #pragma mark - Trace Notification Name
 
 /**
@@ -27,6 +29,7 @@
  Any trace notification name defined with the MDMTraceNotificationName type will be made available
  as TraceNotificationName.<name> in Swift code.
  */
+__deprecated_msg("Use MDMTracing and MDMScheduler's addTracer: instead.")
 typedef NSNotificationName MDMTraceNotificationName NS_EXTENSIBLE_STRING_ENUM
     NS_SWIFT_NAME(TraceNotificationName);
 
@@ -36,6 +39,7 @@ typedef NSNotificationName MDMTraceNotificationName NS_EXTENSIBLE_STRING_ENUM
 
  The value of this key depends on the notification.
  */
+__deprecated_msg("Use MDMTracing and MDMScheduler's addTracer: instead.")
 FOUNDATION_EXTERN NSString* const _Nonnull MDMTraceNotificationPayloadKey
     NS_SWIFT_NAME(TraceNotificationPayloadKey);
 
@@ -52,9 +56,11 @@ FOUNDATION_EXTERN NSString* const _Nonnull MDMTraceNotificationPayloadKey
  The notification's user info MDMTraceNotificationPayloadKey's value is an instance of
  MDMSchedulerPerformersCreatedTracePayload.
  */
+__deprecated_msg("Use MDMTracing and MDMScheduler's addTracer: instead.")
 FOUNDATION_EXPORT MDMTraceNotificationName _Nonnull MDMTraceNotificationNamePerformersCreated;
 
 /** Data for the MDMTraceNotificationNamePerformersCreated notification. */
+__deprecated_msg("Use MDMTracing and MDMScheduler's addTracer: instead.")
 NS_SWIFT_NAME(SchedulerPerformersCreatedTracePayload)
 @interface MDMSchedulerPerformersCreatedTracePayload : NSObject
 
@@ -73,9 +79,11 @@ NS_SWIFT_NAME(SchedulerPerformersCreatedTracePayload)
  The notification's user info MDMTraceNotificationPayloadKey's value is an instance of
  MDMSchedulerPlansCommittedTracePayload.
  */
+__deprecated_msg("Use MDMTracing and MDMScheduler's addTracer: instead.")
 FOUNDATION_EXPORT MDMTraceNotificationName _Nonnull MDMTraceNotificationNamePlansCommitted;
 
 /** Data for the MDMTraceNotificationNamePerformersCreated notification. */
+__deprecated_msg("Use MDMTracing and MDMScheduler's addTracer: instead.")
 NS_SWIFT_NAME(SchedulerPlansCommittedTracePayload)
 @interface MDMSchedulerPlansCommittedTracePayload : NSObject
 
@@ -88,3 +96,5 @@ NS_SWIFT_NAME(SchedulerPlansCommittedTracePayload)
 @property(nonatomic, copy, nonnull, readonly) NSArray<MDMPlan>* committedRemovePlans;
 
 @end
+
+    // clang-format on

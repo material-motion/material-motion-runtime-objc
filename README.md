@@ -59,6 +59,7 @@ commands:
 4. [How to configure performers with plans](#how-to-configure-performers-with-plans)
 5. [How to use composition to fulfill plans](#how-to-use-composition-to-fulfill-plans)
 6. [How to indicate continuous performance](#how-to-indicate-continuous-performance)
+7. [How to trace internal scheduler events](#how-to-trace-internal-scheduler-events)
 
 ### Architecture
 
@@ -501,6 +502,65 @@ Code snippets:
 
 ```swift
 token.terminate()
+```
+
+### How to trace internal scheduler events
+
+Tracing allows you to observe internal events occuring within a scheduler. This information may be
+used for the following purposes:
+
+- Debug logging.
+- Inspection tooling.
+
+Use for other purposes is unsupported.
+
+#### Step 1: Create a tracer class
+
+Code snippets:
+
+***In Objective-C:***
+
+```objc
+@interface <#Custom tracer#> : NSObject <MDMTracing>
+@end
+
+@implementation <#Custom tracer#>
+@end
+```
+
+***In Swift:***
+
+```swift
+class <#Custom tracer#>: NSObject, Tracing {
+}
+```
+
+#### Step 2: Implement methods
+
+The documentation for the Tracing protocol enumerates the available methods.
+
+Code snippets:
+
+***In Objective-C:***
+
+```objc
+@implementation <#Custom tracer#>
+
+- (void)didAddPlan:(id<MDMPlan>)plan to:(id)target {
+
+}
+
+@end
+```
+
+***In Swift:***
+
+```swift
+class <#Custom tracer#>: NSObject, Tracing {
+  func didAddPlan(_ plan: Plan, to target: Any) {
+
+  }
+}
 ```
 
 ## Contributing

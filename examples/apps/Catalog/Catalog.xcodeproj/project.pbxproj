@@ -20,6 +20,7 @@
 		669F4A341D86073A00B0C45C /* TableOfContents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 669F4A331D86073A00B0C45C /* TableOfContents.swift */; };
 		669F4A3C1D860F1E00B0C45C /* TossExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 669F4A3A1D860F1E00B0C45C /* TossExample.swift */; };
 		66EF8FBB1D9F27DF003F063C /* SchedulerTransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66EF8FBA1D9F27DF003F063C /* SchedulerTransactionTests.swift */; };
+		66EF8FBE1DA1F67D003F063C /* StorageTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66EF8FBD1DA1F67D003F063C /* StorageTracer.swift */; };
 		66F0320F1D8336C70094B9C9 /* SchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F0320E1D8336C70094B9C9 /* SchedulerTests.swift */; };
 		66F032111D8349200094B9C9 /* InstantlyContinuous.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F032101D8349200094B9C9 /* InstantlyContinuous.swift */; };
 		66F032151D8349560094B9C9 /* Emit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F032141D8349560094B9C9 /* Emit.swift */; };
@@ -61,6 +62,7 @@
 		669F4A331D86073A00B0C45C /* TableOfContents.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TableOfContents.swift; path = ../../TableOfContents.swift; sourceTree = "<group>"; };
 		669F4A3A1D860F1E00B0C45C /* TossExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TossExample.swift; sourceTree = "<group>"; };
 		66EF8FBA1D9F27DF003F063C /* SchedulerTransactionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SchedulerTransactionTests.swift; sourceTree = "<group>"; };
+		66EF8FBD1DA1F67D003F063C /* StorageTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StorageTracer.swift; sourceTree = "<group>"; };
 		66F0320E1D8336C70094B9C9 /* SchedulerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SchedulerTests.swift; sourceTree = "<group>"; };
 		66F032101D8349200094B9C9 /* InstantlyContinuous.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InstantlyContinuous.swift; sourceTree = "<group>"; };
 		66F032141D8349560094B9C9 /* Emit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Emit.swift; sourceTree = "<group>"; };
@@ -179,6 +181,7 @@
 			isa = PBXGroup;
 			children = (
 				6625A5521D467EBD00FD10F7 /* TestSchedulerDelegate.swift */,
+				66EF8FBD1DA1F67D003F063C /* StorageTracer.swift */,
 			);
 			name = Helpers;
 			sourceTree = "<group>";
@@ -407,6 +410,7 @@
 				6625A5531D467EBD00FD10F7 /* TestSchedulerDelegate.swift in Sources */,
 				668C9B001D91AA6600CB10EE /* ForeverContinuous.swift in Sources */,
 				66EF8FBB1D9F27DF003F063C /* SchedulerTransactionTests.swift in Sources */,
+				66EF8FBE1DA1F67D003F063C /* StorageTracer.swift in Sources */,
 				66F0320F1D8336C70094B9C9 /* SchedulerTests.swift in Sources */,
 				661369711D5BE7CB00F6830F /* CompositionTests.swift in Sources */,
 				6624C6431D466D7C00DF3108 /* ContinuousPerformingTests.swift in Sources */,

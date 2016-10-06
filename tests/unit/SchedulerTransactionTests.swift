@@ -23,11 +23,10 @@ class SchedulerTransactionTests: XCTestCase {
   // Verify that a plan committed to a scheduler is copied.
   func testPlansAreCopied() {
     let state = State()
-    state.boolean = false
-
     let plan = ChangeBoolean(desiredBoolean: true)
-
     let scheduler = Scheduler()
+    let tracer = StorageTracer()
+    state.boolean = false
 
     expectation(forNotification: TraceNotificationName.plansCommitted._rawValue as String, object: scheduler) { notification -> Bool in
       let event = notification.userInfo![TraceNotificationPayloadKey] as! SchedulerPlansCommittedTracePayload
@@ -35,11 +34,16 @@ class SchedulerTransactionTests: XCTestCase {
       return event.committedAddPlans.count == 1
     }
 
+    scheduler.addTracer(tracer)
+
     let transaction = Transaction()
     transaction.add(plan: plan, to: state)
     scheduler.commit(transaction: transaction)
-
+    
     waitForExpectations(timeout: 0.1)
+
+    XCTAssertEqual(tracer.addedPlans.count, 1)
+    XCTAssertNotEqual(tracer.addedPlans[0] as! ChangeBoolean, plan)
   }
 
   // Verify that a plan committed to a scheduler immediately executes its add(plan:) logic.

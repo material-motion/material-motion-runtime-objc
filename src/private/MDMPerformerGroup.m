@@ -24,6 +24,7 @@
 #import "MDMPlanEmitter.h"
 #import "MDMScheduler.h"
 #import "MDMTrace.h"
+#import "MDMTracing.h"
 #import "MDMTransaction+Private.h"
 #import "MDMTransactionEmitter.h"
 
@@ -94,7 +95,7 @@
     } else {
       // this is the case whereby we are calling removePlan:named, but don't have a MDMPlan
     }
-    
+
     if ([self isNamedTransactionLog:log]) {
       id<MDMNamedPlan> namedPlan = (id<MDMNamedPlan>)plan;
       if (log.isRemoval) {
@@ -119,6 +120,11 @@
   id<MDMPerforming> performer = [self performerForPlan:plan log:log isNew:&isNew];
   if (performer && isNew) {
     [trace.createdPerformers addObject:performer];
+    for (id<MDMTracing> tracer in self.scheduler.tracers) {
+      if ([tracer respondsToSelector:@selector(didCreatePerformer:for:)]) {
+        [tracer didCreatePerformer:performer for:self.target];
+      }
+    }
   }
   return performer;
 }
@@ -229,6 +235,11 @@
 - (void)executeLog:(MDMTransactionLog *)log trace:(MDMTrace *)trace {
   for (id<MDMPlan> plan in log.plans) {
     [self addPlan:plan trace:trace log:log];
+    for (id<MDMTracing> tracer in self.scheduler.tracers) {
+      if ([tracer respondsToSelector:@selector(didAddPlan:to:)]) {
+        [tracer didAddPlan:plan to:log.target];
+      }
+    }
   }
 }
 
