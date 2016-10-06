@@ -248,38 +248,38 @@ class MyClass {
 }
 ```
 
-#### Step 2: Create a new transaction instance and associate plans with targets
+#### Step 2: Create plans with targets, associate them with targets and add them to the Scheduler
 
 Code snippets:
 
 ***In Objective-C:***
 
 ```objc
-MDMTransaction *transaction = [MDMTransaction new];
-[transaction addPlan:<#Plan instance#> toTarget:<#View instance#>];
+[scheduler addPlan:<#Plan instance#> toTarget:<#View instance#>];
 ```
 
 ***In Swift:***
 
 ```swift
-let transaction = Transaction()
-transaction.add(plan: <#Plan instance#>, to: <#View instance#>)
+scheduler.addPlan(<#Plan instance#>, to: <#View instance#>)
 ```
 
-#### Step 3: Commit the transaction to the scheduler
+Plans can also be associated with names which allows them to be removed in the future.
 
 Code snippets:
 
 ***In Objective-C:***
 
 ```objc
-[self.scheduler commitTransaction:transaction];
+[scheduler addPlan:<#NamedPlan instance#> named:@"plan_name" toTarget:<#View instance#>];
+[scheduler removePlanNamed:@"plan_name" fromTarget:<#View instance#>];
 ```
 
 ***In Swift:***
 
 ```swift
-scheduler.commit(transaction: transaction)
+scheduler.addPlan(<#NamedPlan instance#>, named:"plan_name", to: <#View instance#>)
+scheduler.removePlan(named:"plan_name", from: <#View instance#>)
 ```
 
 ### How to configure performers with plans
@@ -516,4 +516,3 @@ our [contributor essentials](https://material-motion.gitbooks.io/material-motion
 ## License
 
 Licensed under the Apache 2.0 license. See LICENSE for details.
-
