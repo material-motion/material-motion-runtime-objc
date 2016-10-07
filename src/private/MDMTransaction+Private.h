@@ -27,6 +27,8 @@
 
 - (instancetype)initWithPlans:(NSArray<NSObject<MDMPlan> *> *)plan target:(id)target name:(NSString *)name removal:(BOOL)removal;
 
+- (instancetype)initWithPlans:(NSArray<NSObject<MDMPlan> *> *)plans target:(id)target name:(NSString *)name;
+
 - (instancetype)initWithTarget:(id)target name:(NSString *)name;
 
 @end

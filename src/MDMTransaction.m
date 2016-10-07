@@ -32,7 +32,7 @@
 }
 
 - (void)addPlan:(NSObject<MDMPlan> *)plan toTarget:(id)target {
-  [_logs addObject:[[MDMTransactionLog alloc] initWithPlans:@[plan] target:target name:nil removal:FALSE]];
+  [_logs addObject:[[MDMTransactionLog alloc] initWithPlans:@[plan] target:target name:nil]];
 }
 
 - (NSArray<MDMTransactionLog *> *)logs {
@@ -50,6 +50,16 @@
     _target = target;
     _name = [name copy];
     _removal = removal;
+  }
+  return self;
+}
+
+- (instancetype)initWithPlans:(NSArray<NSObject<MDMPlan> *> *)plans target:(id)target name:(NSString *)name {
+  self = [super init];
+  if (self) {
+    _plans = [[NSArray alloc] initWithArray:plans copyItems:TRUE];
+    _target = target;
+    _name = [name copy];
   }
   return self;
 }

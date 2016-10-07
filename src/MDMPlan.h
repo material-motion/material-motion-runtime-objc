@@ -38,7 +38,6 @@ NS_SWIFT_NAME(Plan)
 
 /**
  Instances of `MDMNamedPlan` can be added or removed as named plans to or from targets.
-
  */
 NS_SWIFT_NAME(NamedPlan)
 @protocol MDMNamedPlan <MDMPlan>
