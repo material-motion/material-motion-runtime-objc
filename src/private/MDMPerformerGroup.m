@@ -211,14 +211,10 @@
     }
   }
   if (isNew) {
-    [self notifyPerformerCreated:performer];
-  }
-}
-
-- (void)notifyPerformerCreated:(id<MDMPerforming>)performer {
-  for (id<MDMTracing> tracer in self.scheduler.tracers) {
-    if ([tracer respondsToSelector:@selector(didCreatePerformer:for:)]) {
-      [tracer didCreatePerformer:performer for:self.target];
+    for (id<MDMTracing> tracer in self.scheduler.tracers) {
+      if ([tracer respondsToSelector:@selector(didCreatePerformer:for:)]) {
+        [tracer didCreatePerformer:performer for:self.target];
+      }
     }
   }
 }
