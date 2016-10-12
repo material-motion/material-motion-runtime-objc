@@ -295,6 +295,21 @@ class SchedulerTests: XCTestCase {
 
     waitForExpectations(timeout: 0.1)
   }
+  
+  func testNamedPlansRespectTracers() {
+    let differentPlan = IncrementerTargetPlan()
+    let state = State()
+    let scheduler = Scheduler()
+    let tracer = StorageTracer()
+    scheduler.addTracer(tracer)
+    
+    scheduler.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: state)
+    scheduler.addPlan(differentPlan, named: "name_two", to: state)
+    
+    XCTAssertEqual(tracer.addedPlans.count, 2)
+    XCTAssert(tracer.addedPlans[0] is NamedPlan)
+    XCTAssert(tracer.addedPlans[1] is IncrementerTargetPlan)
+  }
 
   // A plan that enables hijacking of the delegated performance token blocks.
   private class HijackedIsActiveTokenGenerator: NSObject, Plan {
