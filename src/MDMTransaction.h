@@ -17,7 +17,6 @@
 #import <Foundation/Foundation.h>
 
 @protocol MDMPlan;
-@protocol MDMNamedPlan;
 
 // clang-format off
 /**
@@ -30,16 +29,11 @@ NS_SWIFT_NAME(Transaction)
 
 #pragma mark Adding plans to a transaction
 
-/**
- Associates a plan with a given target.
-
- @param plan The plan to add to this transaction.
- @param target The target on which the plan can operate.
-*/
+/** Associate an plan with a given target. */
 - (void)addPlan:(nonnull id<MDMPlan>)plan
        toTarget:(nonnull id)target
-  NS_SWIFT_NAME(add(plan:to:))
-  __deprecated_msg("Add plans directly to a scheduler instead.");
+NS_SWIFT_NAME(add(plan:to:))
+__deprecated_msg("Add plans directly to a scheduler instead.");
 
 @end
     // clang-format on

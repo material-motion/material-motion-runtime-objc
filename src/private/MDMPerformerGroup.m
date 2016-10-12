@@ -101,13 +101,12 @@
 #pragma mark - Private
 
 - (void)removePlanNamed:(nonnull NSString *)name from:(nonnull id)target withPerformerInfo:(nullable MDMPerformerInfo *)performerInfo {
-  if (performerInfo) {
+  if (performerInfo != nil) {
     id<MDMPerforming> performer = performerInfo.performer;
     if ([performer respondsToSelector:@selector(removePlanNamed:)]) {
       [(id<MDMNamedPlanPerforming>)performer removePlanNamed:name];
     }
-  } else {
-    // this is the case whereby the client has tried to remove a named performer which was never added in the first place
+    [self.performerPlanNameToPerformerInfo removeObjectForKey:name];
   }
 }
 
@@ -136,19 +135,18 @@
   if (performerInfo) {
     *isNew = NO;
     return performerInfo;
-  } else {
-    id<MDMPerforming> performer = [[performerClass alloc] initWithTarget:self.target];
-    performerInfo = [[MDMPerformerInfo alloc] init];
-    performerInfo.performer = performer;
-    [self.performerInfos addObject:performerInfo];
-    if (performerClassName != nil) {
-      self.performerClassNameToPerformerInfo[performerClassName] = performerInfo;
-    }
-    [self setUpFeaturesForPerformerInfo:performerInfo];
-    [trace.createdPerformers addObject:performer];
-    *isNew = YES;
-    return performerInfo;
   }
+  id<MDMPerforming> performer = [[performerClass alloc] initWithTarget:self.target];
+  performerInfo = [[MDMPerformerInfo alloc] init];
+  performerInfo.performer = performer;
+  [self.performerInfos addObject:performerInfo];
+  if (performerClassName != nil) {
+    self.performerClassNameToPerformerInfo[performerClassName] = performerInfo;
+  }
+  [self setUpFeaturesForPerformerInfo:performerInfo];
+  [trace.createdPerformers addObject:performer];
+  *isNew = YES;
+  return performerInfo;
 }
 
 - (void)setUpFeaturesForPerformerInfo:(MDMPerformerInfo *)performerInfo {

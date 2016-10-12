@@ -43,17 +43,6 @@
 
 @implementation MDMTransactionLog
 
-- (instancetype)initWithPlans:(NSArray<NSObject<MDMPlan> *> *)plans target:(id)target name:(NSString *)name removal:(BOOL)removal {
-  self = [super init];
-  if (self) {
-    _plans = [[NSArray alloc] initWithArray:plans copyItems:TRUE];
-    _target = target;
-    _name = [name copy];
-    _removal = removal;
-  }
-  return self;
-}
-
 - (instancetype)initWithPlans:(NSArray<NSObject<MDMPlan> *> *)plans target:(id)target name:(NSString *)name {
   self = [super init];
   if (self) {
