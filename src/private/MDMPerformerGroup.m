@@ -68,6 +68,7 @@
   [trace.committedRemovePlans addObject:plan];
   // then add
   id<MDMPerforming> performer = performerInfo.performer;
+  self.performerPlanNameToPerformerInfo[name] = performerInfo;
   [self notifyPlanAdded:plan to:target trace:trace isNew:isNew performer:performer];
   if ([performer respondsToSelector:@selector(addPlan:named:)]) {
     [(id<MDMNamedPlanPerforming>)performer addPlan:plan named:name];

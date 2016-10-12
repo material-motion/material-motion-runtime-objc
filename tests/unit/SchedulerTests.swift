@@ -171,6 +171,15 @@ class SchedulerTests: XCTestCase {
 
     XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvoked")
   }
+  
+  func testAddAndRemoveTheSameNamedPlan() {
+    let scheduler = Scheduler()
+    
+    scheduler.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: target)
+    scheduler.removePlan(named: "name_one", from: target)
+    
+    XCTAssertTrue(target.text! == "removePlanInvokedaddPlanInvokedremovePlanInvoked")
+  }
 
   func testRemoveNamedPlanThatIsntThere() {
     let scheduler = Scheduler()
