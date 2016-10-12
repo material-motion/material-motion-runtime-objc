@@ -93,6 +93,38 @@ class SchedulerTests: XCTestCase {
       }
     }
   }
+  
+  private class ChangeBooleanNamedPlan: NSObject, NamedPlan {
+    var desiredBoolean: Bool
+    
+    init(desiredBoolean: Bool) {
+      self.desiredBoolean = desiredBoolean
+    }
+    
+    func performerClass() -> AnyClass {
+      return Performer.self
+    }
+    
+    public func copy(with zone: NSZone? = nil) -> Any {
+      return ChangeBooleanNamedPlan(desiredBoolean: desiredBoolean)
+    }
+    
+    private class Performer: NSObject, Performing, NamedPlanPerforming {
+      let target: State
+      required init(target: Any) {
+        self.target = target as! State
+      }
+      
+      func addPlan(_ plan: NamedPlan, named name: String) {
+        let testPlan = plan as! ChangeBooleanNamedPlan
+        target.boolean = testPlan.desiredBoolean
+      }
+      
+      func removePlan(named name: String) {
+        
+      }
+    }
+  }
 
   // Verify that two plans of the same type creates only one performer.
   func testTwoSamePlansCreatesOnePerformer() {
@@ -297,18 +329,21 @@ class SchedulerTests: XCTestCase {
   }
   
   func testNamedPlansRespectTracers() {
-    let differentPlan = IncrementerTargetPlan()
+    let differentPlan = ChangeBooleanNamedPlan(desiredBoolean:true)
     let state = State()
     let scheduler = Scheduler()
     let tracer = StorageTracer()
     scheduler.addTracer(tracer)
     
-    scheduler.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: state)
+    scheduler.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: target)
     scheduler.addPlan(differentPlan, named: "name_two", to: state)
     
     XCTAssertEqual(tracer.addedPlans.count, 2)
     XCTAssert(tracer.addedPlans[0] is NamedPlan)
-    XCTAssert(tracer.addedPlans[1] is IncrementerTargetPlan)
+    XCTAssert(tracer.addedPlans[1] is ChangeBooleanNamedPlan)
+    
+    XCTAssert(target.text == "removePlanInvokedaddPlanInvoked")
+    XCTAssert(state.boolean)
   }
 
   // A plan that enables hijacking of the delegated performance token blocks.
