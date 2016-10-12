@@ -53,14 +53,4 @@
   return self;
 }
 
-- (instancetype)initWithTarget:(id)target name:(NSString *)name {
-  self = [super init];
-  if (self) {
-    _target = target;
-    _name = [name copy];
-    _removal = true;
-  }
-  return self;
-}
-
 @end

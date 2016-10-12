@@ -222,9 +222,7 @@
 
 - (void)executeLog:(MDMTransactionLog *)log trace:(MDMTrace *)trace {
   for (id<MDMPlan> plan in log.plans) {
-    if (log.isRemoval) {
-      [self removePlanNamed:log.name from:log.target];
-    } else if (log.name.length) {
+    if (log.name.length) {
       [self addPlan:(id<MDMNamedPlan>)plan named:log.name to:log.target trace:trace];
     } else {
       [self addPlan:plan to:log.target trace:trace];
