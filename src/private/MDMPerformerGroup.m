@@ -108,6 +108,11 @@
       [(id<MDMNamedPlanPerforming>)performer removePlanNamed:name];
     }
     [self.performerPlanNameToPerformerInfo removeObjectForKey:name];
+    for (id<MDMTracing> tracer in self.scheduler.tracers) {
+      if ([tracer respondsToSelector:@selector(didRemovePlanNamed:from:)]) {
+        [tracer didRemovePlanNamed:name from:target];
+      }
+    }
   }
 }
 

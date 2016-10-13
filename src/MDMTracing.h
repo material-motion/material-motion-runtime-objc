@@ -31,6 +31,10 @@ NS_SWIFT_NAME(Tracing)
 - (void)didAddPlan:(nonnull id<MDMPlan>)plan to:(nonnull id)target
     NS_SWIFT_NAME(didAddPlan(_:to:));
 
+/** Invoked when a named plan is removed from the scheduler. */
+- (void)didRemovePlanNamed:(nonnull NSString *)name from:(nonnull id)target
+NS_SWIFT_NAME(didRemovePlanNamed(_:from:));
+
 /** Invoked after a performer has been created by the scheduler. */
 - (void)didCreatePerformer:(nonnull id<MDMPerforming>)performer for:(nonnull id)target
     NS_SWIFT_NAME(didCreatePerformer(_:for:));

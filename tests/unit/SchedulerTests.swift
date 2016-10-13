@@ -295,6 +295,19 @@ class SchedulerTests: XCTestCase {
 
     waitForExpectations(timeout: 0.1)
   }
+  
+  func testNamedTestsAreRemovedOnATracer() {
+    let scheduler = Scheduler()
+    let tracer = NamedStorageTracer()
+    scheduler.addTracer(tracer)
+    
+    scheduler.addPlan(firstViewTargetAlteringPlan, named: "name_one", to: target)
+    scheduler.removePlan(named: "name_one", from: target)
+    
+    XCTAssertTrue(tracer.removedPlanNames.count == 2)
+    XCTAssertTrue(tracer.removedPlanNames[0] == "name_one")
+    XCTAssertTrue(tracer.removedPlanNames[1] == "name_one")
+  }
 
   // A plan that enables hijacking of the delegated performance token blocks.
   private class HijackedIsActiveTokenGenerator: NSObject, Plan {
