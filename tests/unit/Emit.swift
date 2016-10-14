@@ -39,7 +39,7 @@ class Emit: NSObject, Plan {
       self.target = target
     }
 
-    func add(plan: Plan) {
+    func addPlan(_ plan: Plan) {
       let emit = plan as! Emit
       emitter.emitPlan(emit.plan)
 

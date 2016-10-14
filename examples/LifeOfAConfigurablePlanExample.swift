@@ -96,7 +96,7 @@ class Draggable: NSObject, Plan {
       super.init()
     }
 
-    func add(plan: Plan) {
+    func addPlan(_ plan: Plan) {
       // We must downcast our plan to the expected type in order to access its properties. We use
       // ! to enforce this expectation at runtime.
       let draggable = plan as! Draggable

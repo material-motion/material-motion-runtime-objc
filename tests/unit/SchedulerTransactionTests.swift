@@ -88,7 +88,7 @@ class SchedulerTransactionTests: XCTestCase {
         self.target = target as! State
       }
 
-      func add(plan: Plan) {
+      func addPlan(_ plan: Plan) {
         let testPlan = plan as! ChangeBoolean
         target.boolean = testPlan.desiredBoolean
       }
@@ -199,7 +199,7 @@ class SchedulerTransactionTests: XCTestCase {
         self.target = target
       }
 
-      func add(plan: Plan) {
+      func addPlan(_ plan: Plan) {
         let delayedDelegation = plan as! HijackedIsActiveTokenGenerator
         delayedDelegation.state.tokenGenerator = tokenGenerator
       }

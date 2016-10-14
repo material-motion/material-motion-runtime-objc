@@ -54,12 +54,14 @@ commands:
 # Guides
 
 1. [Architecture](#architecture)
-2. [How to define a new plan and performer type](#how-to-create-a-new-plan-and-performer-type)
-3. [How to commit a plan to a scheduler](#how-to-commit-a-plan-to-a-scheduler)
-4. [How to configure performers with plans](#how-to-configure-performers-with-plans)
-5. [How to use composition to fulfill plans](#how-to-use-composition-to-fulfill-plans)
-6. [How to indicate continuous performance](#how-to-indicate-continuous-performance)
-7. [How to trace internal scheduler events](#how-to-trace-internal-scheduler-events)
+1. [How to define a new plan and performer type](#how-to-create-a-new-plan-and-performer-type)
+1. [How to commit a plan to a scheduler](#how-to-commit-a-plan-to-a-scheduler)
+1. [How to commit a named plan to a scheduler](#how-to-commit-a-named-plan-to-a-scheduler)
+1. [How to configure performers with plans](#how-to-configure-performers-with-plans)
+1. [How to configure performers with named plans](#how-to-configure-performers-with-named-plans)
+1. [How to use composition to fulfill plans](#how-to-use-composition-to-fulfill-plans)
+1. [How to indicate continuous performance](#how-to-indicate-continuous-performance)
+1. [How to trace internal scheduler events](#how-to-trace-internal-scheduler-events)
 
 ## Architecture
 
@@ -130,7 +132,8 @@ class <#Plan#>: NSObject {
 Performers are responsible for fulfilling plans. Fulfillment is possible in a variety of ways:
 
 - [PlanPerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMPlanPerforming.html): [How to configure performers with plans](#how-to-configure-performers-with-plans)
-- [DelegatedPerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMDelegatedPerforming.html)
+- [NamedPlanPerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMNamedPlanPerforming.html): [How to configure performers with named plans](#how-to-configure-performers-with-named-plans)
+- [ContinuousPerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMContinuousPerforming.html): [How to indicate continuous performance](#how-to-indicate-continuous-performance)
 - [ComposablePerforming](https://material-motion.github.io/material-motion-runtime-objc/Protocols/MDMComposablePerforming.html): [How to use composition to fulfill plans](#how-to-use-composition-to-fulfill-plans)
 
 See the associated links for more details on each performing type.
@@ -260,6 +263,50 @@ Code snippets:
 scheduler.addPlan(<#Plan instance#>, to:<#View instance#>)
 ```
 
+## How to commit a named plan to a scheduler
+
+### Step 1: Create and store a reference to a scheduler instance
+
+Code snippets:
+
+***In Objective-C:***
+
+```objc
+@interface MyClass ()
+@property(nonatomic, strong) MDMScheduler* scheduler;
+@end
+
+- (instancetype)init... {
+  ...
+  self.scheduler = [MDMScheduler new];
+  ...
+}
+```
+
+***In Swift:***
+
+```swift
+class MyClass {
+  let scheduler = Scheduler()
+}
+```
+
+### Step 2: Associate named plans with targets
+
+Code snippets:
+
+***In Objective-C:***
+
+```objc
+[scheduler addPlan:<#Plan instance#> named:<#name#> to:<#View instance#>];
+```
+
+***In Swift:***
+
+```swift
+scheduler.addPlan(<#Plan instance#>, named:<#name#>, to:<#View instance#>)
+```
+
 ## How to configure performers with plans
 
 Configuring performers with plans starts by making your performer conform to
@@ -291,7 +338,7 @@ Code snippets:
 
 ```swift
 extension <#Performer#>: PlanPerforming {
-  func add(plan: Plan) {
+  func addPlan(_ plan: Plan) {
     let <#casted plan instance#> = plan as! <#Plan#>
 
     // Do something with the plan.
@@ -304,7 +351,7 @@ extension <#Performer#>: PlanPerforming {
 Make use of Swift's typed switch/casing to handle multiple plan types.
 
 ```swift
-func add(plan: Plan) {
+func addPlan(_ plan: Plan) {
   switch plan {
   case let <#plan instance 1#> as <#Plan type 1#>:
     ()
@@ -317,6 +364,47 @@ func add(plan: Plan) {
 
   default:
     assert(false)
+  }
+}
+```
+
+## How to configure performers with named plans
+
+Code snippets:
+
+***In Objective-C:***
+
+```objc
+@interface <#Performer#> (NamedPlanPerforming) <MDMNamedPlanPerforming>
+@end
+
+@implementation <#Performer#> (NamedPlanPerforming)
+
+- (void)addPlan:(id<MDMNamedPlan>)plan named:(NSString *)name {
+  <#Plan#>* <#casted plan instance#> = plan;
+
+  // Do something with the plan.
+}
+
+- (void)removePlanNamed:(NSString *)name {
+  // Remove any configuration associated with the given name.
+}
+
+@end
+```
+
+***In Swift:***
+
+```swift
+extension <#Performer#>: PlanPerforming {
+  func addPlan(_ plan: NamedPlan, named name: String) {
+    let <#casted plan instance#> = plan as! <#Plan#>
+
+    // Do something with the plan.
+  }
+
+  func removePlan(named name: String) {
+    // Remove any configuration associated with the given name.
   }
 }
 ```

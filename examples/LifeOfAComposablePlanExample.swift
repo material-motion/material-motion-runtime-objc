@@ -89,7 +89,7 @@ private class Tossable: NSObject, Plan {
       super.init()
     }
 
-    func add(plan: Plan) {
+    func addPlan(_ plan: Plan) {
       let tossable = plan as! Tossable
 
       // Draggable is being reused from the Life of a Configurable Plan example.
@@ -154,7 +154,7 @@ private class UIDynamicsPerformer: NSObject, PlanPerforming {
   }
 
   var snapBehavior: UISnapBehavior?
-  func add(plan: Plan) {
+  func addPlan(_ plan: Plan) {
     switch plan {
     case let anchoredTo as Anchored:
       if let behavior = snapBehavior {
